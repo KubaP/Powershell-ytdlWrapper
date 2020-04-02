@@ -2,7 +2,7 @@
 	
 	# Get the module manifest and load it into variable
 	$moduleRoot = (Resolve-Path "$PSScriptRoot\..\..").Path
-	$manifest = ((Get-Content "$moduleRoot\<MODULENAME>.psd1") -join "`n") | Invoke-Expression
+	$manifest = ((Get-Content "$moduleRoot\ytdlWrapper.psd1") -join "`n") | Invoke-Expression
 	
 	# Check that function files are correctly referenced in manifest
 	Context "Basic resources validation" {

@@ -1,8 +1,8 @@
 ﻿TOPIC
-	about_<MODULENAME>_scriptblocks
+	about_ytdlWrapper_scriptblocks
 	
 SHORT DESCRIPTION
-	The <MODULENAME> module supports running custom scriptblocks on ...
+	The ytdlWrapper module supports running custom scriptblocks on ...
 	
 SCRIPTBLOCK OVERVIEW
 	The Pre-... runs before the main ... logic is executed.
@@ -54,5 +54,5 @@ SCRIPTBLOCK EXAMPLE
 	This scriptblock is run ...
 		
 KEYWORDS
-	<MODULENAME>
+	ytdlWrapper
 		

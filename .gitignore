@@ -5,15 +5,15 @@
 *TempPoint*
 
 # Ignore staging info from Visual Studio
-library/<MODULENAME>/.vs/*
-library/<MODULENAME>/<MODULENAME>/bin/*
-library/<MODULENAME>/<MODULENAME>/obj/*
+library/ytdlWrapper/.vs/*
+library/ytdlWrapper/ytdlWrapper/bin/*
+library/ytdlWrapper/ytdlWrapper/obj/*
 
 # ignore PowerShell Studio MetaData
-<MODULENAME>/<MODULENAME>.psproj
-<MODULENAME>/<MODULENAME>.psproj.bak
-<MODULENAME>/<MODULENAME>.psprojs
-<MODULENAME>/<MODULENAME>.psproj
+ytdlWrapper/ytdlWrapper.psproj
+ytdlWrapper/ytdlWrapper.psproj.bak
+ytdlWrapper/ytdlWrapper.psprojs
+ytdlWrapper/ytdlWrapper.psproj
 
 # ignore the TestResults
 TestResults/*

@@ -22,9 +22,9 @@ Write-Host "Starting Tests"
 
 # Remove and re-import the module
 Write-Host "Importing Module"
-Remove-Module <MODULENAME> -ErrorAction Ignore
-Import-Module "$PSScriptRoot\..\<MODULENAME>.psd1" -Verbose
-Import-Module "$PSScriptRoot\..\<MODULENAME>.psm1" -Force -Verbose
+Remove-Module ytdlWrapper -ErrorAction Ignore
+Import-Module "$PSScriptRoot\..\ytdlWrapper.psd1" -Verbose
+Import-Module "$PSScriptRoot\..\ytdlWrapper.psm1" -Force -Verbose
 
 # Create the test results directory
 Write-Host "Creating test result folder"

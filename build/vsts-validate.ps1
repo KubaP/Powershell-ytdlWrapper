@@ -1,2 +1,2 @@
 ﻿# Run internal pester tests
-& "$PSScriptRoot\..\<MODULENAME>\tests\pester.ps1"
+& "$PSScriptRoot\..\ytdlWrapper\tests\pester.ps1"

@@ -1,8 +1,8 @@
 ﻿TOPIC
-	about_<MODULENAME>
+	about_ytdlWrapper
 	
 SHORT DESCRIPTION
-	<MODULENAME> is a ... module designed to ...
+	ytdlWrapper is a ... module designed to ...
 	
 COMMANS...
 	
@@ -26,13 +26,13 @@ COMMANS...
 SCRIPTBLOCKS
 	When running ..., you can pass in ...
 	
-	For details, see: about_<MODULENAME>_scriptblocks
+	For details, see: about_ytdlWrapper_scriptblocks
 	
 OTHER
-	The module stores all data in %appdata%\Powershell\<MODULENAME>
+	The module stores all data in %appdata%\Powershell\ytdlWrapper
 	It is advised to **not** manually modify any files within this directory as it could cause
 	unintended consequences.
 	
 KEYWORDS
-	<MODULENAME>
+	ytdlWrapper
 	

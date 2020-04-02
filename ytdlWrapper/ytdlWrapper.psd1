@@ -1,12 +1,12 @@
 ﻿@{
 	# Script module or binary module file associated with this manifest
-	RootModule = '<MODULENAME>.psm1'
+	RootModule = 'ytdlWrapper.psm1'
 	
 	# Version number of this module.
 	ModuleVersion = '0.1.0'
 	
 	# ID used to uniquely identify this module
-	GUID = '#generate new guid'
+	GUID = 'adb3211a-7554-4beb-a591-e110130b708f'
 	
 	# Author of this module
 	Author = 'KubaP'
@@ -18,7 +18,7 @@
 	Copyright = 'Copyright (c) 2020 KubaP'
 	
 	# Description of the functionality provided by this module
-	Description = ''
+	Description = 'A powershell wrapper for youtube-dl, which allows for advanced automation and template reuse.'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
 	PowerShellVersion = '5.0'
@@ -31,13 +31,13 @@
 	)#>
 	
 	# Assemblies that must be loaded prior to importing this module
-	# RequiredAssemblies = @('bin\<MODULENAME>.dll')
+	# RequiredAssemblies = @('bin\ytdlWrapper.dll')
 	
 	# Type files (.ps1xml) to be loaded when importing this module
-	# TypesToProcess = @('xml\<MODULENAME>.Types.ps1xml')
+	# TypesToProcess = @('xml\ytdlWrapper.Types.ps1xml')
 	
 	# Format files (.ps1xml) to be loaded when importing this module
-	FormatsToProcess = @('xml\<MODULENAME>.Format.ps1xml')
+	# FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
@@ -66,19 +66,19 @@
 		PSData = @{
 			
 			# Tags applied to this module. These help with module discovery in online galleries.
-			Tags = @("Windows","PSEdition_Core","PSEdition_Desktop")
+			Tags = @("Windows","Youtube","Download", "youtube-dl","PSEdition_Core","PSEdition_Desktop")
 			
 			# A URL to the license for this module.
 			LicenseUri = 'https://www.gnu.org/licenses/gpl-3.0.en.html'
 			
 			# A URL to the main website for this project.
-			ProjectUri = 'https://github.com/KubaP/Powershell-<MODULENAME>'
+			ProjectUri = 'https://github.com/KubaP/Powershell-ytdlWrapper'
 			
 			# A URL to an icon representing this module.
 			# IconUri = ''
 			
 			# ReleaseNotes of this module
-			ReleaseNotes = 'https://github.com/KubaP/Powershell-<MODULENAME>/blob/master/<MODULENAME>/changelog.md'
+			ReleaseNotes = 'https://github.com/KubaP/Powershell-ytdlWrapper/blob/master/ytdlWrapper/changelog.md'
 			
 		} # End of PSData hashtable
 		

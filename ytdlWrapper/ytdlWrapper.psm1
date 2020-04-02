@@ -1,14 +1,14 @@
 ﻿# Create some global variables
 $script:ModuleRoot = $PSScriptRoot
-$script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\<MODULENAME>.psd1").ModuleVersion
+$script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\ytdlWrapper.psd1").ModuleVersion
 
-$script:DataPath = "$env:APPDATA\Powershell\<MODULENAME>"
+$script:DataPath = "$env:APPDATA\Powershell\ytdlWrapper"
 
 if ((Test-Path -Path $script:DataPath) -eq $false) {
 	
 	# Create the module data storage folders if they don't exist
 	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell" -ErrorAction SilentlyContinue
-	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell" -Name "<MODULENAME>"
+	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell" -Name "ytdlWrapper"
 	
 }
 
