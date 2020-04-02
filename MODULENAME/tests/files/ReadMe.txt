@@ -1,0 +1,1 @@
+In this folder, put test data such as xml/txt files or test bainaries.
