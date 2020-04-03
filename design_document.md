@@ -43,14 +43,14 @@ Config example:
 ```
 On job execution
 
-1. Find all occurences of `--... s@{...}`
-2. From database, get the lastest value for `--...` key, replace the `s@{...}` string with it.
+1. Find all occurences of `--... s@{...}{}`
+2. From database, get the lastest value for `...` key, replace the `s@{...}{}` string with it.
 3. Assemble complete paramter string
 4. Wait for job to complete
-5. Create scriptblock from `s@{...}`
-6. Execute scriptblock, store retun value back to database under `--...` key
+5. Create scriptblock from `{}`
+6. Execute scriptblock, store retun value back to database under `...` key
 
-On job creation, specify the initial value for s@{...} since the scriptblock runs after execution.
+On job creation, specify the initial value for `s@{...}{}` since the scriptblock runs after execution.
 
 
 ### For manual jobs
