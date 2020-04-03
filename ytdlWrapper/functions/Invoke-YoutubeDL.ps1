@@ -27,7 +27,12 @@ function Invoke-YoutubeDL {
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config")]
 		[Alias("Path")]
 		[String]
-		$ConfigPath
+		$ConfigPath,
+		
+		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
+		[Alias("Job")]
+		[String]
+		$JobName
 		
 	)
 	
@@ -36,50 +41,16 @@ function Invoke-YoutubeDL {
 		# Only run the logic if the file exists
 		if ((Test-Path $ConfigPath) -eq $true) {
 			
-			# Read in the config file
-			$configFilestream = Get-Content -Path $ConfigPath
-			
-			$dynamicInputList = [System.Collections.Generic.List[System.String]]@()
-			
-			# Iterate through all lines in the config file when regexing
-			foreach ($line in $configFilestream) {
-				
-				# Find all matches to:
-				# 1.	--some-parameter i@{description}	: normal parameter definition
-				# 1.	-s i@{description}					: shorthand parameter definition
-				# 2.	'i@{description}'					: special case for url, since it doesn't have a flag
-				# Also matches even if multiple parameter definitions are on the same line
-				$regex1 = [regex]::Matches($line, "(-(\S+)\s'?i@{(\w+)}'?)\s*")
-				$regex2 = [regex]::Matches($line, "('i@{(\w+)}')")
-				
-				# Add the descriptor fields to the list
-				foreach ($match in $regex1) {
-					
-					# .Group[1] is the whole match
-					# .Group[2] is the 'some-parameter' or 's' match
-					# .Group[3] is the 'description' match
-					
-					$dynamicInputList.Add($match.Groups[3].Value)
-					
-				}
-				
-				foreach ($match in $regex2) {
-					
-					# .Group[1] is the whole match
-					# .Group[2] is the 'description' match
-					
-					$dynamicInputList.Add($match.Groups[2].Value)
-					
-				}
-				
-			}
+			# Retrieve all instances of input variables in the config file
+			$dynamicInputList = Get-ConfigVariables -Path $ConfigPath
 			
 			#Define the dynamic parameter dictionary to add all new parameters to
 			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 			
 			# Now that a list of all input parameters is found, create dynamic parameters for each
-			foreach ($input in $dynamicInputList) {
+			foreach ($userInput in $dynamicInputList) {
 				
+				# TODO: add help message, option for description of variables?
 				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
 				$paramAttribute.Mandatory = $true
 				#$paramAttribute.Position = ?
@@ -87,9 +58,9 @@ function Invoke-YoutubeDL {
 				
 				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 				$attributeCollection.Add($paramAttribute)				
-				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($input, [String], $attributeCollection)
+				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($userInput, [String], $attributeCollection)
 				
-				$parameterDictionary.Add($input, $param)
+				$parameterDictionary.Add($userInput, $param)
 				
 			}
 			
@@ -99,23 +70,83 @@ function Invoke-YoutubeDL {
 		
 	}
 	
-	begin {
-		
-		$PSBoundParameters
-		
-	}
-	
 	process {
 		
-		# Ensure the config file actually exists
-		if ($null -eq (Test-Path -Path $ConfigPath)) {
+		if ($PSCmdlet.ParameterSetName -eq "Config") {
 			
-			Write-Message -Message "There is no file located at: $ConfigPath" -DisplayError
-			return
+			# Ensure the config file actually exists
+			if ($null -eq (Test-Path -Path $ConfigPath)) {
+				
+				Write-Message -Message "There is no file located at: $ConfigPath" -DisplayError
+				return
+				
+			}
 			
-		}	
+			$configFileContent = Get-Content -Path $ConfigPath -Raw
+			
+			# Retrieve all instances of input variables in the config file
+			$dynamicInputList = Get-ConfigVariables -Path $ConfigPath
+			
+			foreach ($inputField in $dynamicInputList) {
+				
+				if ($PSBoundParameters.ContainsKey($inputField) -eq $true) {
+					
+					# Replace the occurence of the input field with the user provided value
+					$configFileContent = $configFileContent -replace "i@{$inputField}", $PSBoundParameters[$inputField]
+					
+				}else {
+					
+					# Warn the user and exit if they've not specified one of the input field parameters
+					Write-Message -Message "You have not supplied the following user input: $inputField" -DisplayError
+					return
+					
+				}
+				
+			}
+			
+			# Write modified config file (with user inputs) to a temp file
+			# It is easier to read in the config file than edit the existing string to work properly, by surrounding stuff in "" quotes etc
+			Out-File -FilePath "$script:DataPath\temp.conf" -Force -InputObject $configFileContent
 		
+		}
 		
+		if ($PSCmdlet.ParameterSetName -eq "Job") {
+			
+			# Check that job exists
+			
+			# Read in the contents of the job config file
+			
+			# Retrieve all instances of live variables in the config file
+			
+			foreach ($liveVariable in $dynamicVariableList) {
+				
+				# Perform live variable logic
+				
+			}
+			
+			# Write modified config file (with user inputs) to a temp file
+			# It is easier to read in the config file than edit the existing string to work properly, by surrounding stuff in "" quotes etc
+			Out-File -FilePath "$script:DataPath\temp.conf" -Force -InputObject $configFileContent
+			
+		}
+		
+		# Define youtube-dl process information
+		$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
+			FileName = "youtube-dl"
+			Arguments = "--config-location `"$script:DataPath\temp.conf`""
+			UseShellExecute = $false
+		}
+		
+		# Start and wait for youtube-dl to finish
+		$process = New-Object System.Diagnostics.Process
+		$process.StartInfo = $processStartupInfo
+		$process.Start()
+		
+		$process.WaitForExit()
+		$process.Dispose()
+		
+		# Delete the temp config file
+		Remove-Item -Path "$script:DataPath\temp.conf" -Force
 		
 	}
 	
