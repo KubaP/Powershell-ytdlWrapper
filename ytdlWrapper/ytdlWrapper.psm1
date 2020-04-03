@@ -12,9 +12,16 @@ if ((Test-Path -Path $script:DataPath) -eq $false) {
 	
 }
 
+if ($null -eq (Get-Command "youtube-dl.exe" -ErrorAction SilentlyContinue)) {
+	
+	# Warn the user that youtube-dl.exe cannot be found since without the binary in PATH, the module won't function correctly.
+	Write-Message -Message "Could not find youtube-dl.exe in the PATH." -DisplayWarning
+	
+}
+
 # Detect whether at some level dotsourcing was enforced
 $script:doDotSource = $global:ModuleDebugDotSource
-$script:doDotSource = $true # Needed to make code coverage tests work
+$script:doDotSource = $true #! Needed to make code coverage tests work
 # Detect whether at some level loading individual module files, rather than the compiled module was enforced
 $importIndividualFiles = $global:ModuleDebugIndividualFiles
 
