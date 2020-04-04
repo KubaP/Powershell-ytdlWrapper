@@ -47,14 +47,11 @@ function Invoke-YoutubeDL {
 			#Define the dynamic parameter dictionary to add all new parameters to
 			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 			
-			# Now that a list of all input parameters is found, create dynamic parameters for each
+			# Now that a list of all input parameters is found, create a dynamic parameter for each
 			foreach ($userInput in $dynamicInputList) {
 				
-				# TODO: add help message, option for description of variables?
 				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
 				$paramAttribute.Mandatory = $true
-				#$paramAttribute.Position = ?
-				#$paramAttribute.HelpMessage = "?"
 				
 				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 				$attributeCollection.Add($paramAttribute)				
@@ -72,6 +69,7 @@ function Invoke-YoutubeDL {
 	
 	process {
 		
+		# This logic replaces 
 		if ($PSCmdlet.ParameterSetName -eq "Config") {
 			
 			# Ensure the config file actually exists
