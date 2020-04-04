@@ -41,7 +41,8 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'Invoke-YoutubeDL'
+		'Invoke-YoutubeDL',
+		'Register-YoutubeDLJob'
 	)
 	
 	# Cmdlets to export from this module
@@ -66,7 +67,7 @@
 		PSData = @{
 			
 			# Tags applied to this module. These help with module discovery in online galleries.
-			Tags = @("Windows","Youtube","Download", "youtube-dl","PSEdition_Core","PSEdition_Desktop")
+			Tags = @("Windows", "Youtube", "Video", "Download", "youtube-dl", "PSEdition_Core", "PSEdition_Desktop")
 			
 			# A URL to the license for this module.
 			LicenseUri = 'https://www.gnu.org/licenses/gpl-3.0.en.html'

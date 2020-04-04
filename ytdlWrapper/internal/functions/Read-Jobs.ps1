@@ -1,18 +1,28 @@
 ﻿function Read-Jobs {
 	<#
 	.SYNOPSIS
-		Short description
+		Read and return a list of jobs
+		
 	.DESCRIPTION
-		Long description
+		Read and return a list of youtube-dl.Job objects from a database file.
+		
+	.PARAMETER Path
+		The path of the database file.
+		
 	.EXAMPLE
-		PS C:\> <example usage>
-		Explanation of what the example does
+		PS C:\> $jobList = Read-Job -Path "%appdata%/database.xml"
+		
+		Populates the array/list with all jobs in the specified file.
+		
 	.INPUTS
-		Inputs (if any)
+		None
+		
 	.OUTPUTS
-		Output (if any)
+		None
+		
 	.NOTES
-		General notes
+		
+		
 	#>
 	
 	[CmdletBinding()]
@@ -24,39 +34,34 @@
 		
 	)
 	
-	# Ensure that the file actually exists
-	if ($null -eq (Test-Path -Path $Path)) {
-		
-		Write-Message -Message "There is no file located at: $Path" -DisplayError
-		return
-		
-	}
-	
 	$jobList = [System.Collections.Generic.List[psobject]]@()
 	
-	# Read the xml data in
-	$xmlData = Import-Clixml -Path $Path 
-	
-	
-	foreach ($item in $xmlData
-	) {
+	# If the file doesn't exist, then the import logic will error accordingly
+	if ((Test-Path -Path $Path) -eq $true) {
 		
-		# Rather than extracting the deserialised objects, which would create a mess of serialised and non-serialised objects
-		# Create new identical copies from scratch
-		if ($item.PSObject.TypeNames[0] -eq "Deserialized.youtube-dl.Job") {
+		# Read the xml data in
+		$xmlData = Import-Clixml -Path $Path 
+		
+		foreach ($item in $xmlData) {
 			
-			$job = New-Object -TypeName psobject
-			$job.PSObject.TypeNames.Insert(0, "youtube-dl.Job")		
-			
-			# Copy the properties from the Deserialized object into the new one
-			foreach ($property in $item.PSObject.Properties) {
+			# Rather than extracting the deserialised objects, which would create a mess of serialised and non-serialised objects
+			# Create new identical copies from scratch
+			if ($item.PSObject.TypeNames[0] -eq "Deserialized.youtube-dl.Job") {
+				
+				$job = New-Object -TypeName psobject
+				$job.PSObject.TypeNames.Insert(0, "youtube-dl.Job")		
+				
+				# Copy the properties from the Deserialized object into the new one
+				foreach ($property in $item.PSObject.Properties) {
+						
+					# Copy over the deserialised object properties over to new object
+					$job | Add-Member -Type NoteProperty -Name $property.Name -Value $property.Value
 					
-				# Copy over the deserialised object properties over to new object
-				$job | Add-Member -Type NoteProperty -Name $property.Name -Value $property.Value
+				}
+				
+				$jobList.Add($job)
 				
 			}
-			
-			$jobList.Add($job)
 			
 		}
 		
