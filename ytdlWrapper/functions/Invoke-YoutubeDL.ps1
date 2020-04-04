@@ -26,12 +26,12 @@ function Invoke-YoutubeDL {
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config")]
 		[Alias("Path")]
-		[String]
+		[string]
 		$ConfigPath,
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
 		[Alias("Job")]
-		[String]
+		[string]
 		$JobName
 		
 	)
@@ -39,25 +39,25 @@ function Invoke-YoutubeDL {
 	dynamicparam {
 		
 		# Only run the logic if the file exists
-		if ((Test-Path $ConfigPath) -eq $true) {
+		if ($null -ne $ConfigPath -and (Test-Path $ConfigPath) -eq $true) {
 			
-			# Retrieve all instances of input variables in the config file
-			$dynamicInputList = Get-ConfigVariables -Path $ConfigPath
+			# Retrieve all instances of input definitions in the config file
+			$definitionList = Read-ConfigDefinitions -Path $ConfigPath -InputDefinitions
 			
 			#Define the dynamic parameter dictionary to add all new parameters to
 			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 			
-			# Now that a list of all input parameters is found, create a dynamic parameter for each
-			foreach ($userInput in $dynamicInputList) {
+			# Now that a list of all input definitions is found, create a dynamic parameter for each
+			foreach ($definition in $definitionList) {
 				
 				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
 				$paramAttribute.Mandatory = $true
 				
 				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 				$attributeCollection.Add($paramAttribute)				
-				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($userInput, [String], $attributeCollection)
+				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($definition, [String], $attributeCollection)
 				
-				$parameterDictionary.Add($userInput, $param)
+				$parameterDictionary.Add($definition, $param)
 				
 			}
 			
@@ -69,33 +69,32 @@ function Invoke-YoutubeDL {
 	
 	process {
 		
-		# This logic replaces 
 		if ($PSCmdlet.ParameterSetName -eq "Config") {
 			
 			# Ensure the config file actually exists
-			if ($null -eq (Test-Path -Path $ConfigPath)) {
+			if ((Test-Path -Path $ConfigPath) -eq $false) {
 				
-				Write-Message -Message "There is no file located at: $ConfigPath" -DisplayError
+				Write-Message -Message "There is no file located at: $ConfigPath" -DisplayWarning
 				return
 				
 			}
 			
 			$configFileContent = Get-Content -Path $ConfigPath -Raw
 			
-			# Retrieve all instances of input variables in the config file
-			$dynamicInputList = Get-ConfigVariables -Path $ConfigPath
+			# Retrieve all instances of input definitions in the config file
+			$definitionList = Read-ConfigDefinitions -Path $ConfigPath -InputDefinitions
 			
-			foreach ($inputField in $dynamicInputList) {
+			foreach ($definition in $definitionList) {
 				
-				if ($PSBoundParameters.ContainsKey($inputField) -eq $true) {
+				if ($PSBoundParameters.ContainsKey($definition) -eq $true) {
 					
-					# Replace the occurence of the input field with the user provided value
-					$configFileContent = $configFileContent -replace "i@{$inputField}", $PSBoundParameters[$inputField]
+					# Replace the occurence of the input definition with the user provided value
+					$configFileContent = $configFileContent -replace "i@{$definition}", $PSBoundParameters[$definition]
 					
 				}else {
 					
-					# Warn the user and exit if they've not specified one of the input field parameters
-					Write-Message -Message "You have not supplied the following user input: $inputField" -DisplayError
+					# Warn the user and exit if they've not specified one of the input definition parameters
+					Write-Message -Message "You have not supplied the following user input: $definition" -DisplayWarning
 					return
 					
 				}
@@ -110,15 +109,38 @@ function Invoke-YoutubeDL {
 		
 		if ($PSCmdlet.ParameterSetName -eq "Job") {
 			
-			# Check that job exists
+			# Retrieve the job and heck that it exists
+			$jobList = Read-Jobs -Path "$script:DataPath\database.xml"
+			$job = $jobList | Where-Object { $_.Name -eq $JobName }
+			
+			if ($null -eq $job) {
+				
+				Write-Message -Message "There is no job called: $JobName" -DisplayWarning
+				return
+				
+			}
 			
 			# Read in the contents of the job config file
+			$configFileContent = Get-Content -Path $job.ConfigPath -Raw
 			
-			# Retrieve all instances of live variables in the config file
+			# Retrieve all instances of variable definitions in the config file
+			$definitionList = Read-ConfigDefinitions -Path $job.ConfigPath -VariableDefinitions
 			
-			foreach ($liveVariable in $dynamicVariableList) {
+			foreach ($definition in $definitionList) {
 				
-				# Perform live variable logic
+				# Replace the occurence of the variable definition with the variable value from the database
+				$configFileContent = $configFileContent -replace "v@{$definition}{.*?}", $job.Variables[$definition]
+				
+			}
+			
+			# Retrieve all instances of variable scriptblocks in the config file
+			$scriptblockDefinitionList = Read-ConfigDefinitions -Path $job.ConfigPath -VariableScriptblocks
+			
+			# Create a table linking each scriptblock to its respective definition name
+			[hashtable]$scriptblockList = [ordered]@{}	
+			for ($i = 0; $i -lt $definitionList.Count; $i++) {
+				
+				$scriptblockList.Add($definitionList[$i], [scriptblock]::Create($scriptblockDefinitionList[$i]))
 				
 			}
 			
@@ -143,8 +165,32 @@ function Invoke-YoutubeDL {
 		$process.WaitForExit()
 		$process.Dispose()
 		
-		# Delete the temp config file
+		# Delete the temp config file since its no longer needed
 		Remove-Item -Path "$script:DataPath\temp.conf" -Force
+		
+		# Execute any scriptblocks for variables
+		if ($PSCmdlet.ParameterSetName -eq "Job") {
+			
+			# Run every scriptblock, and store the result back into the databasee
+			foreach ($key in $scriptblockList.Keys) {
+				
+				$return = Invoke-Command -ScriptBlock $scriptblockList[$key]
+				
+				if ($null -eq $return) {
+					
+					Write-Message -Message "The scriptblock for the $key variable definition didn't return a value. It must return a value." -DisplayError
+					return
+					
+				}
+				
+				$job.Variables[$key] = $return
+				
+			}
+			
+		}
+		
+		# Save the modified job (if any scriptblocks ran) to the database file
+		Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList
 		
 	}
 	

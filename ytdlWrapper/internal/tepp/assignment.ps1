@@ -1,3 +1,2 @@
 ﻿# Tab expansion assignements for commands
-# E.g. Register-ArgumentCompleter -CommandName ... -ParameterName ... -Scriptblock ...
-
+Register-ArgumentCompleter -CommandName Invoke-YoutubeDL -ParameterName JobName -ScriptBlock $argCompleter_JobName
