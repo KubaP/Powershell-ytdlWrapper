@@ -1,4 +1,4 @@
-﻿function Get-ConfigDefinitions {
+﻿function Read-ConfigDefinitions {
 	<#
 	.SYNOPSIS
 		Short description
