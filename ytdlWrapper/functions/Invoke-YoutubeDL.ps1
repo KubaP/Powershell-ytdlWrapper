@@ -174,23 +174,24 @@ function Invoke-YoutubeDL {
 			# Run every scriptblock, and store the result back into the databasee
 			foreach ($key in $scriptblockList.Keys) {
 				
-				$return = Invoke-Command -ScriptBlock $scriptblockList[$key]
+				$returnResult = Invoke-Command -ScriptBlock $scriptblockList[$key]
 				
-				if ($null -eq $return) {
+				if ($null -eq $returnResult) {
 					
 					Write-Message -Message "The scriptblock for the $key variable definition didn't return a value. It must return a value." -DisplayError
 					return
 					
 				}
 				
-				$job.Variables[$key] = $return
+				$job.Variables[$key] = $returnResult
 				
 			}
 			
+			# Save the modified job (if any scriptblocks ran) to the database file
+			Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
+			
 		}
 		
-		# Save the modified job (if any scriptblocks ran) to the database file
-		Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList
 		
 	}
 	

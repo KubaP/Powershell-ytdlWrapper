@@ -111,7 +111,7 @@
 		$jobList.Add($job)
 		
 		# Save the newly created job to the database file
-		Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList
+		Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
 		
 	}
 	
