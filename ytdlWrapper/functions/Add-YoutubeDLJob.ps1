@@ -71,7 +71,7 @@
 	process {
 		
 		# Read in the list of job objects
-		$jobList = Read-Jobs -Path "$script:DataPath\database.xml"
+		$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
 		
 		# Check that the job name isn't already taken
 		$job = $jobList | Where-Object { $_.Name -eq $Name }

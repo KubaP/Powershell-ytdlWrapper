@@ -1,18 +1,18 @@
-﻿function Read-Jobs {
+﻿function Get-Jobs {
 	<#
 	.SYNOPSIS
-		Read and return a list of jobs
+		Get and return a list of jobs
 		
 	.DESCRIPTION
-		Read and return a list of youtube-dl.Job objects from a database file.
+		Get and return a list of youtube-dl.Job objects from the database file.
 		
 	.PARAMETER Path
 		The path of the database file.
 		
 	.EXAMPLE
-		PS C:\> $jobList = Read-Job -Path "%appdata%/database.xml"
+		PS C:\> $jobList = Get-Job -Path "%appdata%/database.xml"
 		
-		Populates the array/list with all jobs in the specified file.
+		Populates the array/list with all jobs in the specified database.
 		
 	.INPUTS
 		None

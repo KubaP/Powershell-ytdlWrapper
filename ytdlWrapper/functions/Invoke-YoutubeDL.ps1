@@ -110,7 +110,7 @@ function Invoke-YoutubeDL {
 		if ($PSCmdlet.ParameterSetName -eq "Job") {
 			
 			# Retrieve the job and heck that it exists
-			$jobList = Read-Jobs -Path "$script:DataPath\database.xml"
+			$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
 			$job = $jobList | Where-Object { $_.Name -eq $JobName }
 			
 			if ($null -eq $job) {
