@@ -37,13 +37,15 @@
 	# TypesToProcess = @('xml\ytdlWrapper.Types.ps1xml')
 	
 	# Format files (.ps1xml) to be loaded when importing this module
-	# FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
+	FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
 		'Invoke-YoutubeDL',
 		'Add-YoutubeDLJob',
-		'Remove-YoutubeDLJob'
+		'Remove-YoutubeDLJob',
+		'Get-YoutubeDLJob',
+		'Set-YoutubeDLJob'
 	)
 	
 	# Cmdlets to export from this module
