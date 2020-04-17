@@ -1,18 +1,26 @@
-﻿function Register-YoutubeDLJob {
+﻿function Add-YoutubeDLJob {
 	<#
 	.SYNOPSIS
-		Short description
+		Create a new job definition
+		
 	.DESCRIPTION
-		Long description
+		Add a new youtube-dl job definition to the database, which can be used with the Invoke-YoutubeDL command.
+		
 	.EXAMPLE
-		PS C:\> <example usage>
-		Explanation of what the example does
+		PS C:\> Add-YoutubeDLJob -Name "test" -ConfigPath ~/conf.txt -Variable "value"
+		
+		Adds a new job under the name "test", pointing to the configuration file specified,
+		which contains a variable "Variable" and initialises it with the value "value".
+		
 	.INPUTS
-		Inputs (if any)
+		None
+		
 	.OUTPUTS
-		Output (if any)
+		None
+		
 	.NOTES
-		General notes
+		
+		
 	#>
 	
 	[CmdletBinding()]
@@ -91,7 +99,7 @@
 		$job | Add-Member -NotePropertyName "Name" -NotePropertyValue $Name
 		$job | Add-Member -NotePropertyName "ConfigPath" -NotePropertyValue $ConfigPath
 		
-		# Add the user-provided variable values to the job object
+		# Add the user-provided variable initial-values to the job object
 		[hashtable]$variableList = [ordered]@{}		
 		foreach ($definition in $definitionList) {
 			
