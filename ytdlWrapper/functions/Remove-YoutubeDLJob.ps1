@@ -1,52 +1,68 @@
 ﻿function Remove-YoutubeDLJob {
 	<#
 	.SYNOPSIS
-		Short description
+		Remove a job definition
 		
 	.DESCRIPTION
-		Long description
+		Remove a youtube-dl job definition from the database.
+		
+	.PARAMETER JobName
+		The name of the job to remove. Accepts multiple names in an array.
 		
 	.EXAMPLE
-		PS C:\> <example usage>
+		PS C:\> Remove-YoutubeDLJob -JobName "test"
 		
-		Explanation of what the example does
+		Removes a job called "test" from the database.
+		
+	.EXAMPLE
+		PS C:\> "test","test2" | Remove-YoutubeDLJob
+		
+		Removes the jobs called "test" and "test2" from the database.
 		
 	.INPUTS
-		None
+		System.String[]
 		
 	.OUTPUTS
 		None
 		
 	.NOTES
-		General notes
+		
 		
 	#>
 	
 	[CmdletBinding()]
 	param (
 		
-		[Parameter(Position = 0, Mandatory = $true)]
+		[Parameter(Position = 0, Mandatory = $true, ValueFromPipeline)]
 		[Alias("Job")]
-		[string]
+		[string[]]
 		$JobName
 		
 	)
 	
-	# Read in the list of job objects
-	$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
+	process {
 		
-	# Check that the job exists
-	$job = $jobList | Where-Object { $_.Name -eq $JobName }
-	if ($null -eq $job) {
-		
-		Write-Message -Message "There is no job called: $JobName" -DisplayWarning
-		return
+		foreach ($name in $JobName) {
+			
+			# Read in the list of job objects
+			$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
+				
+			# Check that the job exists
+			$job = $jobList | Where-Object { $_.Name -eq $name }
+			if ($null -eq $job) {
+				
+				Write-Message -Message "There is no job called: $name" -DisplayWarning
+				return
+				
+			}
+			
+			$jobList.Remove($job)
+			
+			# Save the modified database file with the job removed changes
+			Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
+			
+		}
 		
 	}
-	
-	$jobList.Remove($job)
-	
-	# Save the modified database file with the job removed changes
-	Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
 	
 }
