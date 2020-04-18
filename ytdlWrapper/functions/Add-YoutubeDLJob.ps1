@@ -7,10 +7,10 @@
 		Add a new youtube-dl job definition to the database, which can be used with the Invoke-YoutubeDL command.
 		
 	.EXAMPLE
-		PS C:\> Add-YoutubeDLJob -Name "test" -ConfigPath ~/conf.txt -Variable "value"
+		PS C:\> Add-YoutubeDLJob -Name "test" -ConfigPath ~/conf.txt -Number "123"
 		
 		Adds a new job under the name "test", pointing to the configuration file specified,
-		which contains a variable "Variable" and initialises it with the value "value".
+		which contains a variable "Number" and initialises it with the value "123".
 		
 	.INPUTS
 		None
@@ -19,7 +19,10 @@
 		None
 		
 	.NOTES
-		
+		Once you supply a valid configuration filepath, the function will create parameters at runtime for each
+		variable found in the file, so if for example the configuration file has the variables: "number", "url",
+		the parameters -Number and -Url will be exposed. To see all the parameters, pressing Ctrl+Tab will show
+		the variable parameters at the top of the list.
 		
 	#>
 	

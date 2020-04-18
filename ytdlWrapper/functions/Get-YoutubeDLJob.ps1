@@ -8,7 +8,7 @@
 		details to the screen.
 		
 	.PARAMETER JobName
-		The name of the job to retrieve. Accepts multiple names as an array.
+		The name of the job to retrieve. Accepts multiple names in an array.
 		
 	.EXAMPLE
 		PS C:\> Get-YoutubeDLJob -JobName "test"
@@ -18,7 +18,7 @@
 	.EXAMPLE
 		PS C:\> "test","test2" | Get-YoutubeDLJob
 		
-		Returns the youtube-dl job objects for the jobs "test" and "test2" one after another.
+		Returns the youtube-dl job objects for the jobs named "test" and "test2" one after another.
 		
 	.INPUTS
 		System.String[]
@@ -34,7 +34,7 @@
 	[CmdletBinding()]
 	param (
 		
-		# Tab completion assigned
+		# Tab completion
 		[Parameter(Position = 0, Mandatory = $true, ValueFromPipeline)]
 		[Alias("Job","Name")]
 		[string[]]
