@@ -2,36 +2,71 @@
 	about_ytdlWrapper
 	
 SHORT DESCRIPTION
-	ytdlWrapper is a ... module designed to ...
+	ytdlWrapper is a module designed to speed up and automate the use of youtube-dl in powershell.
 	
-COMMANS...
+OVERVIEW
+	This module relies on using youtube-dl configuration files, a feature that youtube-dl comes with.
+	Commands in this module execute youtube-dl with the --config-location argument, which means that
+	anything that you can do in youtube-dl, this module supports.
 	
-	
-	Example...
-	
-	
-	OPTIONAL PARAMETERS
-	
-	-...
+	The module allows for primarily three functions:
+		1. Executing youtube-dl configuration files as-is.
+		2. Creating and using templates which ask the user for a few parameters before running.
+		3. Creating and executing jobs which have the ability to store variables persistently between sessions.
 		
-		Allows you to ...
-
-	<CommonParameters>
-		
-		-WhatIf
-		-Confirm
-		-Verbose
-
-
-SCRIPTBLOCKS
-	When running ..., you can pass in ...
 	
-	For details, see: about_ytdlWrapper_scriptblocks
+	Option (1) involves just using a complete youtube-dl configuration file, which will be passed to youtube-dl
+	and executed as-is. This is an alternate way to running: youtube-dl.exe --config-location "/some/path/here".
+	
+	
+	Option (2) involves using an almost-complete youtube-dl configuration file. This file won't have every
+	argument hard-coded, so when the template is invoked, the module will ask the user for missing argument values.
+	
+	An example of this is having a "music" template, which has arguments such as the --format defined to download 
+	music rather than video, and the --output defined to save the file correctly as an mp3, but it lacks the url.
+	When the user invokes this template, they provide just the url for a specific music video, and the rest of the
+	options are defined already. This allows for easy downloading of music without having to specify all the
+	arguments manually each time.
+	
+	
+	Option (3) involves using an advanced youtube-dl configuration file. This file has multiple variables defined
+	within it. Variables are pieces of data which are calculated once youtube-dl finished running, and are then
+	used the next time the job is ran.
+	
+	An example of this is having an "archive" job, which downloads a certain channel's upload playlist every
+	month for archiving. It only downloads the new videos since the last run to save time, and numbers them
+	all in the filename: 
+		0001 - oldest video
+		0002 - slightly newer video
+		0003 - slightly newer x2 video
+	After youtube-dl finishes running, the command finds the latest number that the video's have reached, in
+	this example it would be 0003. Now the next time this job is run, --autonumber-start is given 0004 (0003+1)
+	and it downloads the two latest videos which have come out since. Now the filenames look like:
+		0001 - oldest video
+		0002 - slightly newer video
+		0003 - slightly newer x2 video
+		0004 - new video
+		0005 - latest video
+	This allows the same job, for e.g. archiving a specific channel, to carry on the numbering scheme without
+	having to manually update the --autonumber-start value in the configuration file.
+	In this example, if you downloaded the whole playlist each time, this wouldn't be necessary. But that would
+	waste both a lot of	bandwidth and time so it makes more sense to use the youtube-dl --download-archive feature,
+	and in this scenario being able to automate the process is ideal.
+			
+	The main command which invokes youtube-dl is: Invoke-YoutubeDL, which either accepts a configuration
+	filepath or a job name.
+
+	
+	For detailed information about Templates, see about_ytdlWrapper_templates
+	
+	For detailed information about Jobs, see about_ytdlWrapper_jobs
+	
 	
 OTHER
 	The module stores all data in %appdata%\Powershell\ytdlWrapper
-	It is advised to **not** manually modify any files within this directory as it could cause
-	unintended consequences.
+	It is advised to **not** manually modify any files within this directory as it could have unintended
+	consequences.
+	
 	
 KEYWORDS
 	ytdlWrapper
