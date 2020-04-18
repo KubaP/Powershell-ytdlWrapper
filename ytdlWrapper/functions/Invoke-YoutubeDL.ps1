@@ -202,6 +202,13 @@ function Invoke-YoutubeDL {
 				
 			}
 			
+			# If the job has a scriptblock, run it
+			if ($null -ne $job.Scriptblock) {
+				
+				Invoke-Command -ScriptBlock $job.Scriptblock -ArgumentList $job
+				
+			}
+			
 			# Save the modified job (if any scriptblocks ran) to the database file
 			Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
 			

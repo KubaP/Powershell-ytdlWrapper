@@ -53,9 +53,19 @@
 				
 				# Copy the properties from the Deserialized object into the new one
 				foreach ($property in $item.PSObject.Properties) {
-						
+					
 					# Copy over the deserialised object properties over to new object
-					$job | Add-Member -Type NoteProperty -Name $property.Name -Value $property.Value
+					if ($property.Name -eq "Scriptblock") {
+						
+						# In the case of a scriptblock, create it as a proper scriptblock object so that it doesn't
+						# have to be converted later on, possibly more than once?
+						$job | Add-Member -Type NoteProperty -Name "Scriptblock" -Value ([Scriptblock]::Create($property.Value))
+						
+					}else {
+						
+						$job | Add-Member -Type NoteProperty -Name $property.Name -Value $property.Value
+						
+					}
 					
 				}
 				

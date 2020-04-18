@@ -12,6 +12,9 @@
 	.PARAMETER ConfigPath 
 		The filepath pointing to the configuration file.
 		
+	.PARAMETER Scriptblock
+		A scriptblock which will be executed as part of the job once youtube-dl finishes running.
+		
 	.EXAMPLE
 		PS C:\> Add-YoutubeDLJob -Name "test" -ConfigPath ~/conf.txt -Number "123"
 		
@@ -42,7 +45,11 @@
 		[Parameter(Position = 1, Mandatory = $true)]
 		[Alias("Path")]
 		[string]
-		$ConfigPath
+		$ConfigPath,
+		
+		[Parameter(Position = 2, Mandatory = $false)]
+		[scriptblock]
+		$Scriptblock
 		
 	)
 	
@@ -115,6 +122,9 @@
 			$variableList.Add($definition, $PSBoundParameters[$definition])
 			
 		}
+		
+		# If a scriptblock has been given in, add it to the job object
+		$job | Add-Member -NotePropertyName "Scriptblock" -NotePropertyValue $Scriptblock.ToString()
 		
 		$job | Add-Member -NotePropertyName "Variables" -NotePropertyValue $variableList
 		$jobList.Add($job)
