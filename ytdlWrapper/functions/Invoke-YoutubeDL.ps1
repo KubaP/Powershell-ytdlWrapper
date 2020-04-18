@@ -1,23 +1,31 @@
 function Invoke-YoutubeDL {
 	<#
 	.SYNOPSIS
-		Short description
+		Invoke youtube-dl
 		
 	.DESCRIPTION
-		Long description
+		Invoke the youtube-dl process, specifying either an already defined job or a configuration file.
 		
 	.EXAMPLE
-		PS C:\> <example usage>
-		Explanation of what the example does
+		PS C:\> Invoke-YoutubeDL -ConfigPath "~/conf.txt" -Url "//some/url/"
+		
+		Invokes youtube-dl using the specified configuration path, with has an input definition "Url" that is 
+		passed in as a parameter.
+		
+	.EXAMPLE
+		PS C:\> Invoke-YoutubeDL -JobName "test"
+		
+		Invokes youtube-dl using the configuration path specified by the job, and any variables which may be 
+		defined for this job.
 		
 	.INPUTS
-		Inputs (if any)
+		None
 		
 	.OUTPUTS
-		Output (if any)
+		None
 		
 	.NOTES
-		General notes
+		
 		
 	#>
 	
@@ -29,8 +37,9 @@ function Invoke-YoutubeDL {
 		[string]
 		$ConfigPath,
 		
+		# Tab completion
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
-		[Alias("Job")]
+		[Alias("Job", "Name")]
 		[string]
 		$JobName
 		
@@ -129,7 +138,7 @@ function Invoke-YoutubeDL {
 			foreach ($definition in $definitionList) {
 				
 				# Replace the occurence of the variable definition with the variable value from the database
-				$configFileContent = $configFileContent -replace "v@{$definition}{.*?}", $job.Variables[$definition]
+				$configFileContent = $configFileContent -replace "v@{$definition}{start{.*?}end}", $job.Variables[$definition]
 				
 			}
 			
