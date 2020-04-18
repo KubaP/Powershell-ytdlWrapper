@@ -6,6 +6,12 @@
 	.DESCRIPTION
 		Add a new youtube-dl job definition to the database, which can be used with the Invoke-YoutubeDL command.
 		
+	.PARAMETER Name
+		The name to call the job.
+		
+	.PARAMETER ConfigPath 
+		The filepath pointing to the configuration file.
+		
 	.EXAMPLE
 		PS C:\> Add-YoutubeDLJob -Name "test" -ConfigPath ~/conf.txt -Number "123"
 		

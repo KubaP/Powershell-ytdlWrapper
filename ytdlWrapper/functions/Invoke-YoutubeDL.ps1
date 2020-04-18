@@ -6,6 +6,12 @@ function Invoke-YoutubeDL {
 	.DESCRIPTION
 		Invoke the youtube-dl process, specifying either an already defined job or a configuration file.
 		
+	.PARAMETER ConfigPath
+		The filepath pointing to the configuration file to use.
+		
+	.PARAMETER JobName
+		The name of the job to run.
+		
 	.EXAMPLE
 		PS C:\> Invoke-YoutubeDL -ConfigPath "~/conf.txt" -Url "//some/url/"
 		
