@@ -57,9 +57,9 @@ OVERVIEW
 	filepath or a job name.
 
 	
-	For detailed information about Templates, see about_ytdlWrapper_templates
+	For detailed information about Templates, 	see about_ytdlWrapper_templates
 	
-	For detailed information about Jobs, see about_ytdlWrapper_jobs
+	For detailed information about Jobs, 		see about_ytdlWrapper_jobs
 	
 	
 OTHER

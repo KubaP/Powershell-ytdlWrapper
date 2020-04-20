@@ -81,7 +81,8 @@ CHANGING DATA IN A JOB
 		PS C:\> Set-YoutubeDLJob -JobName "job_name" -ConfigPath "~/new_job.conf"
 		
 	This will change the job's configuration filepath if the file was moved for example.
-	
+	If the file was edited and a variable definition was added/removed, the job must be updated to stay in sync.
+	See the SYNCING A JOB section.
 	
 	To change a value of a variable for a job, run the Set-YoutubeDLJob command specifying a job name, the
 	variable name, and a new value:
@@ -91,6 +92,35 @@ CHANGING DATA IN A JOB
 	This will change the job's StartNumber variable to have a new value of 999.
 	Once you've typed in a valid job name, the Variable parameter will have auto-completion values for all
 	variables the job has, so it's not necessary to remember them.
+	
+SYNCING A JOB
+	If the configuration file is changed, i.e. a variable definition is added or removed, then the job
+	must be synced up again to the configuration file, as the variable definitions in the file and in the job
+	will differ now. Example:
+	
+		job variables		variables in
+		(in database)		config file
+		-------------		------------
+		downloadpath		downloadpath
+		url					NEW_variable
+		title				url
+		
+	In this example, the 'title' variable must be removed from the job database, and a initial value for the new
+	'NEW_variable' variable must be provided so that the job can run properly.
+	
+	To sync the job to the configuration file, run the Set-YoutubeDLJob command with the -Update switch:
+	
+		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Update
+		
+	Once you've typed in a valid name of a job, a parameter for each *new* variable definition will be
+	available to pass in an initial value.
+	
+	For example above, you would type:
+	
+		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Update -NEW_variable "some_value"	
+		
+	
+	(If the scriptblock is changed then this is not necessary, only if a variable name is added/edited/removed).
 	
 	
 DELETING A JOB
