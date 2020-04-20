@@ -141,6 +141,18 @@ function Invoke-YoutubeDL {
 			# Retrieve all instances of variable definitions in the config file
 			$definitionList = Read-ConfigDefinitions -Path $job.ConfigPath -VariableDefinitions
 			
+			# Check that the job variables match the configuration file definitions, otherwise there would be errors
+			$jobDefinitionList = $job.Variables.Keys
+			$difference1 = $jobDefinitionList | Where-Object { $definitionList -notcontains $_ }
+			$difference2 = $definitionList | Where-Object { $jobDefinitionList -notcontains $_ }
+			if (($null -ne $difference1) -or ($null -ne $difference2)) {
+				
+				Write-Message -Message "The job variables in the database do not match the variable definitions in the configuration file.
+										`rRun Set-YoutubeDLJob with the -Update switch to fix the issue. See docs for help." -DisplayWarning
+				return
+				
+			}
+			
 			foreach ($definition in $definitionList) {
 				
 				# Replace the occurence of the variable definition with the variable value from the database
