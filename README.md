@@ -5,8 +5,8 @@ Powershell-ytdlWrapper is a module aimed at improving ease-of-use and allowing t
 
 <!-- [![Azure DevOps builds](https://img.shields.io/azure-devops/build/KubaP999/3d9148d2-04d0-4835-b7cb-7bf89bdbf11b/7?label=latest%20build&logo=azure-pipelines)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development)
 [![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/KubaP999/ProgramManager/7?logo=codecov&logoColor=white)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development) -->
-[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ProgramManager?logo=powershell&logoColor=white)](https://www.powershellgallery.com/packages/ytdlWrapper)
-![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ProgramManager?logo=windows)
+[![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ytdlWrapper?logo=powershell&logoColor=white)](https://www.powershellgallery.com/packages/ytdlWrapper)
+![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ytdlWrapper?logo=windows)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](./LICENSE)
 
 ## Getting Started
@@ -15,7 +15,7 @@ In order to get started with the latest build, simply download the module from t
 ```powershell
 PS C:\> Install-Module ytdlWrapper
 ```
-Installing this module does not mean that it is loaded automatically on start-up. Powershell supports loading modules on-the-fly since v3, however the first time you run a command it can be a bit slow to tabcomplete parameters or values. If you would like to load this module on shell start-up, add the following line to `~/Documents/Powershell/Profile.ps1` :
+Installing this module does not mean that it is loaded automatically on start-up. Powershell supports loading modules on-the-fly since v3, however the first time you run a command it can be a bit slow to tab-complete parameters or values. If you would like to load this module on shell start-up, add the following line to `~/Documents/Powershell/Profile.ps1` :
 ```powershell
 Import-Module ytdlWrapper
 ```
