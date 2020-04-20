@@ -85,7 +85,7 @@
 		# 1.	--some-parameter v@{name}{start{scriptblock}end}	: normal parameter definition
 		# 1.	-s v@{name}{start{scritpblock}end}					: shorthand parameter definition
 		# Also matches even if multiple parameter definitions are on the same line
-		$regex = [regex]::Matches($configFilestream, "(-(\S+)\s'?v@{(\w+)}{start{(.*?)}end}'?)\s+")
+		$regex = [regex]::Matches($configFilestream, "(-(\S+)\s'?v@{(\w+)}{start{(?s)(.*?)}end}'?)\s+")
 		
 		# Add the descriptor fields to the list
 		foreach ($match in $regex) {

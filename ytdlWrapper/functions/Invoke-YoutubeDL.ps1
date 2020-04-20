@@ -156,7 +156,7 @@ function Invoke-YoutubeDL {
 			foreach ($definition in $definitionList) {
 				
 				# Replace the occurence of the variable definition with the variable value from the database
-				$configFileContent = $configFileContent -replace "v@{$definition}{start{.*?}end}", $job.Variables[$definition]
+				$configFileContent = $configFileContent -replace "v@{$definition}{start{(?s)(.*?)}end}", $job.Variables[$definition]
 				
 			}
 			
