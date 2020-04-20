@@ -136,23 +136,51 @@ EXAMPLE - Archiving a youtube channel playlist
 	The configuration file:
 	
 		--playlist-reverse
+
 		--ignore-errors
 		
-		--autonumber-start v@{Autonumber}{start{
-			Write-Host "hello world"; return "123"
-			
-			}end}
-			
+		--autonumber-start v@{autonumber}{start{
+			$latestFile = (Get-ChildItem -Path "~\tmp" | Sort-Object -Property LastAccessTime -Descending)[0]
+			$regex = [regex]::Matches($latestFile.Name, "(\d\d\d\d).*")
+			$highestNumber = [int]$regex.Groups[1].Value + 1
+	
+			return $highestNumber
+		}end}
+
 		--write-thumbnail
+
 		--add-metadata
+		
+		--download-archive ~\archive\downloaded_list.txt
+
 		-f '(mp4)[fps>30][height>=1080]+(m4a)/(mp4)[height>=1080]+(m4a)/best'
 		-o '~\tmp\%(autonumber)04d %(title)s'
 		'https://youtube.com/some_playlist_id'
 		
 		
+	The post-execution scriptblock:
+	
+		Move-Item -Path ~\tmp\* -Destination ~\archive\
+		
+		
 	The invocation:
 	
+		PS C:\> Add-YoutubeDLJob -Name "archive_job" -ConfigPath ~\conf.txt -Autonumber "0001" 
+				-Scriptblock $scriptblock
+	
 		PS C:\> Invoke-YoutubeDL -JobName "archive_job"
+		
+		
+	The result:
+	
+		In ~\archive\ :
+			downloaded_list.txt
+			0001 - a video.mp4
+			0002 - another video.mp4
+			0003 - a further video.mp4
+			
+		The autonumber counter is now set to 0004, so the next time the job is run, the latest videos
+		will continue at 0004 onwards, keeping a consistent numbering scheme.
 		
 	
 KEYWORDS

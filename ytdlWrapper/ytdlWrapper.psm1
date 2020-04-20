@@ -14,8 +14,9 @@ if ((Test-Path -Path $script:DataPath) -eq $false) {
 
 if ($null -eq (Get-Command "youtube-dl.exe" -ErrorAction SilentlyContinue)) {
 	
-	# Warn the user that youtube-dl.exe cannot be found since without the binary in PATH, the module won't function correctly.
-	Write-Warning "Could not find youtube-dl.exe in the PATH."
+	# Warn the user that youtube-dl.exe cannot be found since without the binary in PATH,
+	# the module won't function correctly.
+	Write-Warning "Could not find youtube-dl.exe in PATH. Install it or modify the PATH variable."
 	
 }
 

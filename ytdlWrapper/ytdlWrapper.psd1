@@ -18,7 +18,7 @@
 	Copyright = 'Copyright (c) 2020 KubaP'
 	
 	# Description of the functionality provided by this module
-	Description = 'A powershell wrapper for youtube-dl, which allows for advanced automation and template reuse.'
+	Description = 'A powershell wrapper for youtube-dl, which allows for advanced automation and template re-use.'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
 	PowerShellVersion = '5.0'

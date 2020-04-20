@@ -86,9 +86,10 @@ EXAMPLE - Downloading music
 
 	The configuration file:
 	
-		--add-metadata
-		-f 'm4a/mp3/bestaudio'
+		-f '(m4a)/(mp3)/bestaudio'
+		
 		-o 'i@{DownloadFolder}\%(title)s.mp3'
+		
 		'i@{Url}'
 	
 	

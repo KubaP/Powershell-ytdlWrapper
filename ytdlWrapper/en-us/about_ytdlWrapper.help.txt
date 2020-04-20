@@ -45,8 +45,8 @@ OVERVIEW
 		0001 - oldest video
 		0002 - slightly newer video
 		0003 - slightly newer x2 video
-		0004 - new video
-		0005 - latest video
+	->	0004 - new video
+	->	0005 - latest video
 	This allows the same job, for e.g. archiving a specific channel, to carry on the numbering scheme without
 	having to manually update the --autonumber-start value in the configuration file.
 	In this example, if you downloaded the whole playlist each time, this wouldn't be necessary. But that would
