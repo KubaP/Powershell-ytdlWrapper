@@ -18,6 +18,9 @@
 	.PARAMETER ConfigPath
 		The new filepath pointing to the configuration file.
 		
+	.PARAMETER Scriptblock
+		The new scriptblock to use post-execution.
+		
 	.EXAMPLE
 		PS C:\> Set-YoutubeDLJob -JobName "test" -Variable "number" -Value "123"
 		
@@ -27,6 +30,11 @@
 		PS C:\> Set-YoutubeDLJob -JobName "test" -ConfigPath "~/new-config.txt"
 		
 		Sets the configuration filepath for the job named "test".
+		
+	.EXAMPLE
+		PS C:\> Set-YoutubeDLJob -JobName "test" -Scriptblock $script
+		
+		Sets the scriptblock for the job named "test" to the scriptblock $script.
 		
 	.INPUTS
 		System.String[]
@@ -45,6 +53,7 @@
 		# Tab completion
 		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Variable")]
 		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Config")]
+		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Scriptblock")]
 		[Alias("Job", "Name")]
 		[string]
 		$JobName,
@@ -60,7 +69,11 @@
 		
 		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Config")]
 		[string]
-		$ConfigPath
+		$ConfigPath,
+		
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Scriptblock")]
+		[scriptblock]
+		$Scriptblock
 		
 	)
 	
@@ -95,6 +108,19 @@
 			
 			# Set the configuration filepath to the new value
 			$job.ConfigPath = $ConfigPath
+			
+		}elseif ($PSCmdlet.ParameterSetName -eq "Scriptblock") {
+			
+			# Set the scriptblock to the new one, if there is no previously assigned scriptblock create a new one
+			if ($null -ne $job.Scriptblock) {
+				
+				$job.Scriptblock = $Scriptblock.ToString()
+				
+			}else {
+				
+				$job | Add-Member -NotePropertyName "Scriptblock" -NotePropertyValue $Scriptblock.ToString()
+				
+			}
 			
 		}
 		
