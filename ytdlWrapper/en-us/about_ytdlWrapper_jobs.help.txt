@@ -1,0 +1,188 @@
+﻿TOPIC
+	about_ytdlWrapper_jobs
+	
+SHORT DESCRIPTION
+	Jobs allow you to re-use a certain configuration but give it the ability to persistently track some data
+	and use it within the configuration file. Once the youtube-dl binary finishes execution, a custom scriptblock
+	runs which generates a piece of data to store as a variable. When the job is run next time, this variable is
+	used as a youtube-dl argument which allows for more complex automation tasks.
+	
+	
+SETTING UP A JOB CONFIGURATION FILE
+	To use a youtube-dl configuration file as a job, it must have at least one variable definition. The syntax
+	of a variable definition looks like:
+	
+		v@{name}{start{scriptblock}end}
+		
+		where name is a string which acts as a user-friendly description of this variable.
+		and name can only contain the characters: a-zA-Z0-9_
+		name *cannot* contain a space!
+		
+		where scriptblock is a valid powershell scriptblock that *contains* a return value
+		
+		
+	An example of using a variable definition in a proper configuration file:
+	
+		--write-thumbnail
+		--add-metadata
+	->	--autonumber-start v@{StartNumber}{start{...}end}
+		-f 'bestvideo'
+		-o '~\download_folder\%(title)s'
+		'https://some/youtube/url'
+	
+		When this job is run, the command will retrieve the value for StartNumber from the database and use that
+		value for the --autonumber-start argument. Once the job finishes running, the scriptblock ... will execute
+		and whatever value it returns, will be stored in the database under the StartNumber key.
+		There is a space between the --autonumber-start and the v@{}{} just like in a normal youtube-dl
+		configuration file.
+	
+	
+CREATING A JOB
+	For a job to be run, it must firstly be defined. Once you have created the configuration file, run:
+	
+		PS C:\> Add-YoutubeDLJob -Name "job_name" -ConfigPath "~/job.conf"
+		
+	Once you've typed in a valid path to a configuration file, a parameter for each variable definition will be
+	available to pass in an initial value. This must be done since the scriptblock runs after youtube-dl is 
+	invoked, so the first time running the job, there would be no value.
+	
+	For example, if the job has a v@{StartNumber}{} definition, you would type:
+	
+		PS C:\> Add-YoutubeDLJob -Name "job_name" -ConfigPath "~/job.conf" -StartNumber "0005"
+	
+	If you don't remember all the variable definitions in the job, pressing Ctrl+Tab will show a list of all
+	valid parameters, and the variable parameters will be at the top of said list.
+	
+	Once a job is created, it can be run through youtube-dl.
+	
+	
+RUNNING A JOB
+	To run a job, run the Invoke-YoutubeDL command specifying a name of a job:
+	
+		PS C:\> Invoke-YoutubeDL -JobName "job_name"
+		
+	This is all that's necessary to run a job. Everything else, including the execution of scriptblocks, happens
+	automatically without requiring any user input.
+	
+	
+RETRIEVING A JOB
+	To retrieve information about a job, run the Get-YoutubeDLJob command specifying a job name:
+	
+		PS C:\> Get-YoutubeDLJob -JobName "job_name"
+	
+	This will return the job object and display it to screen. Alternatively, the object can be piped to other
+	commands which accept pipeline input.
+	
+	
+CHANGING DATA IN A JOB
+	To change the configuration filepath for a job, run the Set-YoutubeDLJob command specifying a job name
+	and a new filepath:
+	
+		PS C:\> Set-YoutubeDLJob -JobName "job_name" -ConfigPath "~/new_job.conf"
+		
+	This will change the job's configuration filepath if the file was moved for example.
+	If the file was edited and a variable definition was added/removed, the job must be updated to stay in sync.
+	See the SYNCING A JOB section.
+	
+	To change a value of a variable for a job, run the Set-YoutubeDLJob command specifying a job name, the
+	variable name, and a new value:
+	
+		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Variable "StartNumber" -Value "999"
+		
+	This will change the job's StartNumber variable to have a new value of 999.
+	Once you've typed in a valid job name, the Variable parameter will have auto-completion values for all
+	variables the job has, so it's not necessary to remember them.
+	
+SYNCING A JOB
+	If the configuration file is changed, i.e. a variable definition is added or removed, then the job
+	must be synced up again to the configuration file, as the variable definitions in the file and in the job
+	will differ now. Example:
+	
+		job variables		variables in
+		(in database)		config file
+		-------------		------------
+		downloadpath		downloadpath
+		url					NEW_variable
+		title				url
+		
+	In this example, the 'title' variable must be removed from the job database, and a initial value for the new
+	'NEW_variable' variable must be provided so that the job can run properly.
+	
+	To sync the job to the configuration file, run the Set-YoutubeDLJob command with the -Update switch:
+	
+		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Update
+		
+	Once you've typed in a valid name of a job, a parameter for each *new* variable definition will be
+	available to pass in an initial value.
+	
+	For example above, you would type:
+	
+		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Update -NEW_variable "some_value"	
+		
+	
+	(If the scriptblock is changed then this is not necessary, only if a variable name is added/edited/removed).
+	
+	
+DELETING A JOB
+	To delete a job completely, run the Remove-YoutubeDLJob command specifying a job name:
+	
+		PS C:\> Remove-YoutubeDLJob -JobName "job_name"
+		
+	This will remove the job "job_name" from the database, but it will not delete the configuration file.
+	
+	
+EXAMPLE - Archiving a youtube channel playlist
+
+	The configuration file:
+	
+		--playlist-reverse
+
+		--ignore-errors
+		
+		--autonumber-start v@{autonumber}{start{
+			$latestFile = (Get-ChildItem -Path "~\tmp" | Sort-Object -Property LastAccessTime -Descending)[0]
+			$regex = [regex]::Matches($latestFile.Name, "(\d\d\d\d).*")
+			$highestNumber = [int]$regex.Groups[1].Value + 1
+	
+			return $highestNumber
+		}end}
+
+		--write-thumbnail
+
+		--add-metadata
+		
+		--download-archive ~\archive\downloaded_list.txt
+
+		-f '(mp4)[fps>30][height>=1080]+(m4a)/(mp4)[height>=1080]+(m4a)/best'
+		-o '~\tmp\%(autonumber)04d %(title)s'
+		'https://youtube.com/some_playlist_id'
+		
+		
+	The post-execution scriptblock:
+	
+		Move-Item -Path ~\tmp\* -Destination ~\archive\
+		
+		
+	The invocation:
+	
+		PS C:\> Add-YoutubeDLJob -Name "archive_job" -ConfigPath ~\conf.txt -Autonumber "0001" 
+				-Scriptblock $scriptblock
+	
+		PS C:\> Invoke-YoutubeDL -JobName "archive_job"
+		
+		
+	The result:
+	
+		In ~\archive\ :
+			downloaded_list.txt
+			0001 - a video.mp4
+			0002 - another video.mp4
+			0003 - a further video.mp4
+			
+		The autonumber counter is now set to 0004, so the next time the job is run, the latest videos
+		will continue at 0004 onwards, keeping a consistent numbering scheme.
+		
+	
+KEYWORDS
+	ytdlWrapper
+	

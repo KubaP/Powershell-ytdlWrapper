@@ -43,14 +43,14 @@ Config example:
 ```
 On job execution
 
-1. Find all occurences of `--... s@{...}`
-2. From database, get the lastest value for `--...` key, replace the `s@{...}` string with it.
+1. Find all occurences of `--... s@{...}{}`
+2. From database, get the lastest value for `...` key, replace the `s@{...}{}` string with it.
 3. Assemble complete paramter string
 4. Wait for job to complete
-5. Create scriptblock from `s@{...}`
-6. Execute scriptblock, store retun value back to database under `--...` key
+5. Create scriptblock from `{}`
+6. Execute scriptblock, store retun value back to database under `...` key
 
-On job creation, specify the initial value for s@{...} since the scriptblock runs after execution.
+On job creation, specify the initial value for `s@{...}{}` since the scriptblock runs after execution.
 
 
 ### For manual jobs
@@ -68,3 +68,42 @@ On job execution
 
 
 Match any regex for `-...` or `--...` strings, since config can include both types.
+
+
+### Wording scheme
+
+*Invoke-YoutubeDL* -> Start a youtube-dl download process
+*Register-YoutubeDLJob* -> Register a new resource (job object containing data) for access by another command (Invoke-YoutubeDL)
+
+A *Job* is an object containing information for automation
+    It contains a *Path* which points to the *Configuration file* (a youtube-dl config file)
+    It contains a *Name* which is used to call/differentiate the job
+    It contains a *LastRun* timestamp to help determine when the job was last run
+    It contains a *Variable* array which keeps track of the variables for this specific job
+        Each *Variable* contains a *Value*
+
+
+The *Configuration file* contains the following
+    A *Variable definition* which contains the whole string and defines the following:
+        A *Variable syntax* which is the whole `v@{name}{scriptblock}` string
+        A *Variable name* which is the `{name}` part, and labels the variable
+        A *Variable scriptblock* which is the `{scriptblock}` part, and contain powershell code to form a scriptblock
+    A *Input definition* which contains the whole string and defines the following:
+        A *Input syntax* which is the whole `i@{name}` string
+        A *Input name* which is the `{name}` part, and labels the input
+        
+
+
+When you first register a job, you provide an *initial Value* for each *Variable* to instantiate it, before any scriptblocks can run.
+
+
+When you run Invoke-YoutubeDL specifying a *configuration file* (running as a template)
+    It requests *user input* for each *input definition* under the *input name*
+    
+When you run Invoke-YoutubeDL specifying a *job* (automation)
+    It finds all *variable definitions* and for each, it gets the *value* of the *variable* from the *database*
+    It creates a scriptblock for each *variable scriptblock*
+
+
+
+

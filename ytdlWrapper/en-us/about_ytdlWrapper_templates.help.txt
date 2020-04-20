@@ -1,0 +1,123 @@
+﻿TOPIC
+	about_ytdlWrapper_templates
+	
+SHORT DESCRIPTION
+	Templates allow you to re-use a certain configuration but give it some flexibility with regards to
+	user input. With a template, you can specify the majority of the youtube-dl arguments but leave some
+	for the user to input at runtime. These may be arguments which often change.
+	
+	
+SETTING UP A TEMPLATE CONFIGURATION FILE
+	To use a youtube-dl configuration file as a template, it must have at least one input definition. The syntax
+	of an input definition looks like:
+	
+		i@{name}
+		
+		where name is a string which acts as a user-friendly description of this input.
+		and name can only contain the characters: a-zA-Z0-9_
+		name *cannot* contain a space!
+	
+	
+	An example of using an input definition in a proper configuration file:
+	
+		--write-thumbnail
+		--add-metadata
+	->	--autonumber-start i@{StartNumber}
+		-f 'best'
+		-o '~\download_folder\%(title)s'
+		'https://some/youtube/url'
+	
+		When this template is run, the command will ask the user to input a value for StartNumber.
+		There is a space between the --autonumber-start and the i@{} just like in a normal youtube-dl
+		configuration file.
+		
+	
+	The input definition gets replaced during runtime with the user given value. This means that if the
+	youtube-dl argument needs to be wrapped in ' ' single-quotes, so does the input definition. An example
+	of this is:
+	
+		--write-thumbnail
+		--add-metadata
+		-f 'best'
+	->	-o 'i@{DownloadPath}'
+		'https://some/youtube/url'
+		
+		In a normal youtube-dl configuration file, the -o (output) filepath must be in ' ' quotes, so here,
+		the 'i@{}' is also wrapped within the ' ' quotes.
+		
+		
+	There is a special case for the url, since youtube-dl does not have a url argument. Instead the url argument
+	is a string wrapped in ' ' quotes which is at the end of the configuration file. Hence there is a special
+	case for this:
+	
+		--write-thumbnail
+		-f 'best'
+		-o '~\download_folder\%(title)s'
+	->	'i@{Url}'
+		
+		Even though the input definition doesn't follow an argument, such as -f, this will get properly detected.
+		
+	
+RUNNING A TEMPLATE
+	To run a template, run the Invoke-YoutubeDL command specifying a path to the template configuration file:
+	
+		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template.conf"
+		
+	Once you've typed in a valid path to a configuration file, a parameter for each input definition will be
+	available to pass a value in.
+	
+	For example, if the template has a i@{Url} definition, you would type:
+	
+		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template.conf" -Url "https://some/url"
+	
+	If you don't remember all the input definitions in the template, pressing Ctrl+Tab will show a list of all
+	valid parameters, and the input parameters will be at the top of said list.
+	
+	
+	A real-life example of this may be:
+	
+		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template_music.conf" -DownloadLocation "~/download/%(title)s"
+				-Url "https://youtube.com/some_video_id"
+		
+		This has two input definitions; DownloadLocation and Url
+	
+	
+EXAMPLE - Downloading music
+
+	The configuration file:
+	
+		-f '(m4a)/(mp3)/bestaudio'
+		
+		-o 'i@{DownloadFolder}\%(title)s.mp3'
+		
+		'i@{Url}'
+	
+	
+	The invocation:
+	
+		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template_music.conf" -DownloadFolder "~\Music\dl\"
+				-Url "https://youtube.com/some_video_id"
+		
+		
+	This would download the video (as music only) to a path:
+		
+		~\Music\dl\some_video_title.mp3
+	
+	
+OTHER
+	Using these templates effectively requires the use of youtube-dl features.
+	For example to only require the user to specify a folder, without having to worry about specifying
+	the name and extension of the file itself, such a input declaration would be needed:
+	
+		-o 'i@{DownloadFolder}\%(title)s.mp3'
+				
+	In this case, the %(title)s tag is used. If you don't know these tags, or would like to see a full list
+	of available tags, see the youtube-dl documentation at: 
+	
+	https://github.com/ytdl-org/youtube-dl#format-selection
+	
+	
+KEYWORDS
+	ytdlWrapper
+	
+	

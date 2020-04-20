@@ -1,16 +1,147 @@
 ﻿<?xml version="1.0" encoding="utf-16"?>
 <Configuration>
 	<ViewDefinitions>
-		<!-- Foo.Bar -->
+		<!-- youtube-dl.Job -->
 		<View>
-			<Name>Foo.Bar-Description</Name>
+			<Name>youtube-dl Job</Name>
 			<ViewSelectedBy>
-				<TypeName>Foo.Bar</TypeName>
+				<TypeName>youtube-dl.Job</TypeName>
 			</ViewSelectedBy>
+			
 			<GroupBy>
-				<Label>Label</Label>				
-				<PropertyName>Property</PropertyName>
+				<ScriptBlock>$_.Name</ScriptBlock>
+				<CustomControl>
+				
+					<CustomEntries>
+						<CustomEntry>
+							<CustomItem>
+							
+								<Frame>
+									<LeftIndent>2</LeftIndent>
+									<CustomItem>
+										<Text>Name: </Text>
+										<ExpressionBinding>
+											<ScriptBlock>$_.Name</ScriptBlock>
+										</ExpressionBinding>
+										<NewLine/>
+									</CustomItem>
+								</Frame>
+							
+							</CustomItem>
+						</CustomEntry>
+					</CustomEntries>
+					
+				</CustomControl>
 			</GroupBy>
-		</View>				
+			
+			<CustomControl>
+				<CustomEntries>
+				
+					<CustomEntry>
+					
+						<CustomItem>
+						
+							<Frame>
+							<LeftIndent>4</LeftIndent>
+								<CustomItem>
+									<Text>Configuration Filepath: </Text>
+									<ExpressionBinding>
+										<ScriptBlock>$_.ConfigPath</ScriptBlock>
+									</ExpressionBinding>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+							<Frame>
+								<LeftIndent>4</LeftIndent>
+								<CustomItem>
+									<NewLine/>
+									<Text>Variables: </Text>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+							<Frame>
+								<LeftIndent>8</LeftIndent>
+								<CustomItem>
+									<ExpressionBinding>
+										<ScriptBlock>($_.Variables | Format-Table) | Out-String </ScriptBlock>
+									</ExpressionBinding>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+						</CustomItem>
+					</CustomEntry>
+					
+					<CustomEntry>
+					
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<TypeName>youtube-dl.Job</TypeName>
+								<PropertyName>Scriptblock</PropertyName>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<CustomItem>
+							
+							<Frame>
+							<LeftIndent>4</LeftIndent>
+								<CustomItem>
+									<Text>Configuration Filepath: </Text>
+									<ExpressionBinding>
+										<ScriptBlock>$_.ConfigPath</ScriptBlock>
+									</ExpressionBinding>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+							<Frame>
+								<LeftIndent>4</LeftIndent>
+								<CustomItem>
+									<NewLine/>
+									<Text>Variables: </Text>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+							<Frame>
+								<LeftIndent>8</LeftIndent>
+								<CustomItem>
+									<ExpressionBinding>
+										<ScriptBlock>($_.Variables | Format-Table) | Out-String </ScriptBlock>
+									</ExpressionBinding>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+							<Frame>
+								<LeftIndent>4</LeftIndent>
+								<CustomItem>
+									<Text>Post-Execution Scriptblock: </Text>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+							<Frame>
+								<LeftIndent>8</LeftIndent>
+								<CustomItem>
+									<NewLine/>
+									<ExpressionBinding>
+										<ScriptBlock>$_.Scriptblock.ToString()</ScriptBlock>
+									</ExpressionBinding>
+									<NewLine/>
+								</CustomItem>
+							</Frame>
+							
+						</CustomItem>
+					</CustomEntry>
+					
+				</CustomEntries>
+			</CustomControl>
+		</View>
 	</ViewDefinitions>
 </Configuration>
+
+
+
