@@ -4,7 +4,9 @@
 		Set a property of a job
 		
 	.DESCRIPTION
-		Set a property of a youtube-dl job definition, such as the config filepath, or a variable value.
+		Set a property of a youtube-dl job definition, such as the configurataion filepath, or a variable value.
+		This command also allows to sync up the job variables to the definitions in the config file, if the
+		configuration file has been modified, i.e. variables added/removed.
 		
 	.PARAMETER JobName
 		The name of the job to configure. Accepts multiple names in an array.
@@ -21,6 +23,10 @@
 	.PARAMETER Scriptblock
 		The new scriptblock to use post-execution.
 		
+	.PARAMETER Update
+		Sync the job variable definitions to the definitions found in the configuration file. Use this switch
+		if the variables have been added/removed from the configuration file.
+		
 	.EXAMPLE
 		PS C:\> Set-YoutubeDLJob -JobName "test" -Variable "number" -Value "123"
 		
@@ -36,6 +42,11 @@
 		
 		Sets the scriptblock for the job named "test" to the scriptblock $script.
 		
+	.EXAMPLE
+		PS C:\> Set-YoutubeDLJob -JobName "test" -Update -NewVariable "value"
+		
+		Sets the value for the non-initialised variable "NewVariable" to "value", for the job "test".
+		
 	.INPUTS
 		System.String[]
 		
@@ -43,7 +54,12 @@
 		None
 		
 	.NOTES
-		
+		When using the -Update switch, once a valid job name has been supplied, the function will create
+		parameters at runtime for each new (non-initialised) variable found in the configuration file, so if
+		for example the configuration file has the new variable: "NewVariable" added to it, the parameter
+		-NewVariable will be exposed.To see all the parameters, pressing Ctrl+Tab will show
+		the variable parameters at the top of the list. The function will also automatically delete any records
+		of variables that are no longer present in the configuration file.
 		
 	#>
 	
@@ -54,6 +70,7 @@
 		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Variable")]
 		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Config")]
 		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Scriptblock")]
+		[Parameter(Position = 0, Mandatory = $true, ValueFromPipelineByPropertyName, ParameterSetName = "Update")]
 		[Alias("Job", "Name")]
 		[string]
 		$JobName,
@@ -63,19 +80,63 @@
 		[string]
 		$Variable,
 		
-		[Parameter(Position = 2, Mandatory = $true, ParameterSetName = "Variable")]
-		[string]
-		$Value,
-		
 		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Config")]
 		[string]
 		$ConfigPath,
 		
 		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Scriptblock")]
 		[scriptblock]
-		$Scriptblock
+		$Scriptblock,
+		
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Update")]
+		[switch]
+		$Update,
+		
+		[Parameter(Position = 2, Mandatory = $true, ParameterSetName = "Variable")]
+		[string]
+		$Value
 		
 	)
+	
+	dynamicparam {
+		
+		# Read in the list of job objects and try to get the job
+		$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
+		$job = $jobList | Where-Object { $_.Name -eq $JobName }
+		
+		# Only run if a valid job name has been given and the -Update switch is on
+		if (($null -ne $job) -and ($Update -eq $true)) {
+			
+			# Get a list of definitions stored in the job in the config file
+			$jobDefinitions = $job.Variables.Keys
+			$configDefinitions = Read-ConfigDefinitions -Path $job.ConfigPath -VariableDefinitions
+			
+			# Find a list of variables which need to be added
+			$variablesToAdd = $configDefinitions | Where-Object { $jobDefinitions -notcontains $_ }
+			
+			#Define the dynamic parameter dictionary to add all new parameters to
+			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+			
+			# Now that a list of all new variable definitions is found, create a dynamic parameter for each
+			foreach ($variable in $variablesToAdd) {
+				
+				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
+				$paramAttribute.Mandatory = $true
+				$paramAttribute.ParameterSetName = "Update"
+				
+				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+				$attributeCollection.Add($paramAttribute)				
+				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($variable, [String], $attributeCollection)
+				
+				$parameterDictionary.Add($variable, $param)
+				
+			}
+			
+			return $parameterDictionary
+			
+		}
+		
+	}
 	
 	process {
 		
@@ -119,6 +180,28 @@
 			}else {
 				
 				$job | Add-Member -NotePropertyName "Scriptblock" -NotePropertyValue $Scriptblock.ToString()
+				
+			}
+			
+		}elseif ($PSCmdlet.ParameterSetName -eq "Update") {
+			
+			# Get a list of definitions stored in the job in the config file
+			$jobDefinitions = $job.Variables.Keys
+			$configDefinitions = Read-ConfigDefinitions -Path $job.ConfigPath -VariableDefinitions
+			
+			# Find a list of variables which need to be removed and remove them all
+			$variablesToRemove = $jobDefinitions | Where-Object { $configDefinitions -notcontains $_ }
+			foreach ($variable in $variablesToRemove) {
+				
+				$job.Variables.Remove($variable)
+				
+			}
+			
+			# Find a list of variables which need to be added and add them from the user passed in parameters
+			$variablesToAdd = $configDefinitions | Where-Object { $jobDefinitions -notcontains $_ }
+			foreach ($variable in $variablesToAdd) {
+				
+				$job.Variables.Add($variable, $PSBoundParameters[$variable])
 				
 			}
 			

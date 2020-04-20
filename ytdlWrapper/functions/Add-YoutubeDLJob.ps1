@@ -124,7 +124,11 @@
 		}
 		
 		# If a scriptblock has been given in, add it to the job object
-		$job | Add-Member -NotePropertyName "Scriptblock" -NotePropertyValue $Scriptblock.ToString()
+		if ($null -ne $Scriptblock) {
+			
+			$job | Add-Member -NotePropertyName "Scriptblock" -NotePropertyValue $Scriptblock.ToString()
+			
+		}
 		
 		$job | Add-Member -NotePropertyName "Variables" -NotePropertyValue $variableList
 		$jobList.Add($job)
