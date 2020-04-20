@@ -18,7 +18,7 @@
 	Copyright = 'Copyright (c) 2020 KubaP'
 	
 	# Description of the functionality provided by this module
-	Description = 'A powershell wrapper for youtube-dl, which allows for advanced automation and template reuse.'
+	Description = 'A powershell wrapper for youtube-dl, which allows for advanced automation and template re-use.'
 	
 	# Minimum version of the Windows PowerShell engine required by this module
 	PowerShellVersion = '5.0'
@@ -37,11 +37,15 @@
 	# TypesToProcess = @('xml\ytdlWrapper.Types.ps1xml')
 	
 	# Format files (.ps1xml) to be loaded when importing this module
-	# FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
+	FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		
+		'Invoke-YoutubeDL',
+		'Add-YoutubeDLJob',
+		'Remove-YoutubeDLJob',
+		'Get-YoutubeDLJob',
+		'Set-YoutubeDLJob'
 	)
 	
 	# Cmdlets to export from this module
@@ -66,7 +70,7 @@
 		PSData = @{
 			
 			# Tags applied to this module. These help with module discovery in online galleries.
-			Tags = @("Windows","Youtube","Download", "youtube-dl","PSEdition_Core","PSEdition_Desktop")
+			Tags = @("Windows", "Youtube", "Video", "Download", "youtube-dl", "PSEdition_Core", "PSEdition_Desktop")
 			
 			# A URL to the license for this module.
 			LicenseUri = 'https://www.gnu.org/licenses/gpl-3.0.en.html'
