@@ -31,8 +31,8 @@ SETTING UP A JOB CONFIGURATION FILE
 		'https://some/youtube/url'
 	
 		When this job is run, the command will retrieve the value for StartNumber from the database and use that
-		value for the --autonumber-start argument. Once the job finishes running, the scriptblock ... will execute
-		and whatever value it returns, will be stored in the database under the StartNumber key.
+		value for the --autonumber-start argument. Once the job finishes running, the scriptblock ... will
+		execute and whatever value it returns, will be stored in the database under the StartNumber key.
 		There is a space between the --autonumber-start and the v@{}{} just like in a normal youtube-dl
 		configuration file.
 	
@@ -140,7 +140,7 @@ EXAMPLE - Archiving a youtube channel playlist
 		--ignore-errors
 		
 		--autonumber-start v@{autonumber}{start{
-			$latestFile = (Get-ChildItem -Path "~\tmp" | Sort-Object -Property LastAccessTime -Descending)[0]
+			$latestFile =(Get-ChildItem -Path "~\tmp" | Sort-Object -Property LastAccessTime -Descending)[0]
 			$regex = [regex]::Matches($latestFile.Name, "(\d\d\d\d).*")
 			$highestNumber = [int]$regex.Groups[1].Value + 1
 	

@@ -1,5 +1,5 @@
 ﻿# Changelog
-## 0.1.0 (2020-xx-xx)
+## 0.1.0 (2020-04-20)
  - New: Command Invoke-YoutubeDL: Allows for the invocation of the youtube-dl binary, specifying a config file or a job.
  - New: Command Add-YoutubeDLJob: Allows creating a new job for persistent data storage in the database.
  - New: Command Get-YoutubeDLJob: Allows retrieving details for a job, returning an object.

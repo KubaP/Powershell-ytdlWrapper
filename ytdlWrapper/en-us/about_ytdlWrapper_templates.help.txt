@@ -55,7 +55,7 @@ SETTING UP A TEMPLATE CONFIGURATION FILE
 		-o '~\download_folder\%(title)s'
 	->	'i@{Url}'
 		
-		Even though the input definition doesn't follow an argument, such as -f, this will get properly detected.
+	Even though the input definition doesn't follow an argument, such as -f, this will get properly detected.
 		
 	
 RUNNING A TEMPLATE
