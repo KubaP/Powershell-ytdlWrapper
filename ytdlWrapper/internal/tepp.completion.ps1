@@ -40,9 +40,8 @@ $argCompleter_JobVariable = {
 }
 
 # Tab expansion assignements for commands
-Register-ArgumentCompleter -CommandName Invoke-YoutubeDL -ParameterName JobName -ScriptBlock $argCompleter_JobName
-Register-ArgumentCompleter -CommandName Remove-YoutubeDLJob -ParameterName JobName -ScriptBlock $argCompleter_JobName
-Register-ArgumentCompleter -CommandName Get-YoutubeDLJob -ParameterName JobName -ScriptBlock $argCompleter_JobName
-Register-ArgumentCompleter -CommandName Set-YoutubeDLJob -ParameterName JobName -ScriptBlock $argCompleter_JobName
+Register-ArgumentCompleter -CommandName New-YoutubeDLJob -ParameterName Name -ScriptBlock $argCompleter_JobName
+Register-ArgumentCompleter -CommandName Get-YoutubeDLJob -ParameterName Name -ScriptBlock $argCompleter_JobName
 Register-ArgumentCompleter -CommandName Set-YoutubeDLJob -ParameterName Variable -ScriptBlock $argCompleter_JobVariable
-
+Register-ArgumentCompleter -CommandName Remove-YoutubeDLJob -ParameterName Name -ScriptBlock $argCompleter_JobName
+Register-ArgumentCompleter -CommandName Invoke-YoutubeDL -ParameterName Job -ScriptBlock $argCompleter_JobName

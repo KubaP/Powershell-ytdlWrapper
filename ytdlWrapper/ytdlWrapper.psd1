@@ -41,11 +41,11 @@
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
-		'Invoke-YoutubeDL',
-		'Add-YoutubeDLJob',
-		'Remove-YoutubeDLJob',
-		'Get-YoutubeDLJob',
-		'Set-YoutubeDLJob'
+		"New-YoutubeDLJob",
+		"Get-YoutubeDLJob",
+		"Set-YoutubeDLJob",
+		"Remove-YoutubeDLJob",
+		"Invoke-YoutubeDL"
 	)
 	
 	# Cmdlets to export from this module

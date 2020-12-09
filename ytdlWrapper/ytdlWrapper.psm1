@@ -1,6 +1,7 @@
 ﻿# Create module-wide variables.
 $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$ModuleRoot\ytdlWrapper.psd1").ModuleVersion
+$script:Folder = "$env:APPDATA\Powershell\ytdlWrapper"
 $script:DataPath = "$env:APPDATA\Powershell\ytdlWrapper\database.xml"
 
 # For the debug output to be displayed, $DebugPreference must be set
