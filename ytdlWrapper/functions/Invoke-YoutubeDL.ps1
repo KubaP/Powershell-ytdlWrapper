@@ -1,128 +1,120 @@
+<#
+.SYNOPSIS
+	Invoke youtube-dl
+	
+.DESCRIPTION
+	Invoke the youtube-dl process, specifying either an already defined job or a configuration file.
+	
+.PARAMETER Path
+	The path of a youtube-dl configuration file to use.
+	
+.PARAMETER JobName
+	The name of the job to run.
+	
+.EXAMPLE
+	PS C:\> Invoke-YoutubeDL -Path "~/conf.txt" -Url "//some/url/"
+	
+	Invokes youtube-dl using the specified configuration path, with has an input definition "Url" that is 
+	passed in as a parameter.
+	
+.EXAMPLE
+	PS C:\> Invoke-YoutubeDL -JobName "test"
+	
+	Invokes youtube-dl using the configuration path specified by the job, and any variables which may be 
+	defined for this job.
+	
+.INPUTS
+	None
+	
+.OUTPUTS
+	None
+	
+.NOTES
+	
+	
+#>
 function Invoke-YoutubeDL {
-	<#
-	.SYNOPSIS
-		Invoke youtube-dl
-		
-	.DESCRIPTION
-		Invoke the youtube-dl process, specifying either an already defined job or a configuration file.
-		
-	.PARAMETER ConfigPath
-		The filepath pointing to the configuration file to use.
-		
-	.PARAMETER JobName
-		The name of the job to run.
-		
-	.EXAMPLE
-		PS C:\> Invoke-YoutubeDL -ConfigPath "~/conf.txt" -Url "//some/url/"
-		
-		Invokes youtube-dl using the specified configuration path, with has an input definition "Url" that is 
-		passed in as a parameter.
-		
-	.EXAMPLE
-		PS C:\> Invoke-YoutubeDL -JobName "test"
-		
-		Invokes youtube-dl using the configuration path specified by the job, and any variables which may be 
-		defined for this job.
-		
-	.INPUTS
-		None
-		
-	.OUTPUTS
-		None
-		
-	.NOTES
-		
-		
-	#>
 	
 	[CmdletBinding()]
 	param (
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config")]
-		[Alias("Path")]
+		[Alias("ConfigPath")]
 		[string]
-		$ConfigPath,
+		$Path,
 		
 		# Tab completion
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
-		[Alias("Job", "Name")]
+		[Alias("JobName", "Name")]
 		[string]
-		$JobName
+		$Job
 		
 	)
 	
 	dynamicparam {
-		
-		# Only run the logic if the file exists
-		if ($null -ne $ConfigPath -and (Test-Path $ConfigPath) -eq $true) {
+		# Only run the variable detection logic if a file is given in and
+		# exists, i.e. if invoking youtube-dl against a config file.
+		if ($null -ne $Path -and (Test-Path -Path $Path)) {
+			# Retrieve all instances of input definitions in the config file.
+			$definitionList = Read-ConfigDefinitions -Path $Path -InputDefinitions
 			
-			# Retrieve all instances of input definitions in the config file
-			$definitionList = Read-ConfigDefinitions -Path $ConfigPath -InputDefinitions
-			
-			#Define the dynamic parameter dictionary to add all new parameters to
+			# Define the dynamic parameter dictionary to hold new parameters.
 			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-			
-			# Now that a list of all input definitions is found, create a dynamic parameter for each
+			# Now that a list of all input definitions is found, create a
+			# dynamic parameter for each one.
 			foreach ($definition in $definitionList) {
-				
+				# Set up the necessary objects for a parameter.
 				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
 				$paramAttribute.Mandatory = $true
-				
 				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 				$attributeCollection.Add($paramAttribute)				
 				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($definition, [String], $attributeCollection)
 				
 				$parameterDictionary.Add($definition, $param)
-				
 			}
 			
 			return $parameterDictionary
-			
 		}
-		
 	}
 	
 	process {
-		
 		if ($PSCmdlet.ParameterSetName -eq "Config") {
-			
-			# Ensure the config file actually exists
-			if ((Test-Path -Path $ConfigPath) -eq $false) {
-				
-				Write-Message -Message "There is no file located at: $ConfigPath" -DisplayWarning
+			# Validate the config file exists.
+			if ((Test-Path -Path $Path) -eq $false) {
+				Write-Error "The config path: '$Path' points to an invalid/non-existent location!"
 				return
-				
 			}
 			
-			$configFileContent = Get-Content -Path $ConfigPath -Raw
+			$configFileContent = Get-Content -Path $Path -Raw
+			# Retrieve all input definitions within the config file.
+			$definitionList = Read-ConfigDefinitions -Path $Path -InputDefinitions
 			
-			# Retrieve all instances of input definitions in the config file
-			$definitionList = Read-ConfigDefinitions -Path $ConfigPath -InputDefinitions
-			
+			# Go through all input definitions and substitute the user provided
+			# value, before writing the modified content to a temporary config
+			# file.
 			foreach ($definition in $definitionList) {
-				
-				if ($PSBoundParameters.ContainsKey($definition) -eq $true) {
-					
-					# Replace the occurence of the input definition with the user provided value
+				if ($PSBoundParameters.ContainsKey($definition)) {
+					# Replace the occurence of the input definition with the
+					# user provided value.
 					$configFileContent = $configFileContent -replace "i@{$definition}", $PSBoundParameters[$definition]
-					
-				}else {
-					
-					# Warn the user and exit if they've not specified one of the input definition parameters
-					Write-Message -Message "You have not supplied the following user input: $definition" -DisplayWarning
-					return
-					
 				}
-				
+				else {
+					# There is a input definition which has not been provided a 
+					# value by the user, so error.
+					Write-Error "The following user input: '$definition' was not provided!"
+					return
+				}
 			}
 			
-			# Write modified config file (with user inputs) to a temp file
-			# It is easier to read in the config file than edit the existing string to work properly, by surrounding stuff in "" quotes etc
-			Out-File -FilePath "$script:DataPath\temp.conf" -Force -InputObject $configFileContent
-		
+			# Write modified config file (with substituted user inputs) to a
+			# temporary file. This is done because it is easier to use the 
+			# --config-location flag for youtube-dl than to edit the whole
+			# string to use proper escape sequences.
+			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$configFileContent)
+			$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
+			Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFileContent
 		}
-		
-		if ($PSCmdlet.ParameterSetName -eq "Job") {
+		elseif ($PSCmdlet.ParameterSetName -eq "Job") {
 			
 			# Retrieve the job and heck that it exists
 			$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
@@ -177,23 +169,22 @@ function Invoke-YoutubeDL {
 			
 		}
 		
-		# Define youtube-dl process information
+		# Define youtube-dl process information.
 		$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
 			FileName = "youtube-dl"
-			Arguments = "--config-location `"$script:DataPath\temp.conf`""
+			Arguments = "--config-location `"$script:Folder\$hash.conf`""
 			UseShellExecute = $false
 		}
 		
-		# Start and wait for youtube-dl to finish
+		# Start and wait for youtube-dl to finish.
 		$process = New-Object System.Diagnostics.Process
 		$process.StartInfo = $processStartupInfo
 		$process.Start()
-		
 		$process.WaitForExit()
 		$process.Dispose()
 		
 		# Delete the temp config file since its no longer needed
-		Remove-Item -Path "$script:DataPath\temp.conf" -Force
+		Remove-Item -Path "$script:Folder\$hash.conf" -Force
 		
 		# Execute any scriptblocks for variables
 		if ($PSCmdlet.ParameterSetName -eq "Job") {
@@ -225,9 +216,5 @@ function Invoke-YoutubeDL {
 			Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
 			
 		}
-		
-		
 	}
-	
-	
 }
