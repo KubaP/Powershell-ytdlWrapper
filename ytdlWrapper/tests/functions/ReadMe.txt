@@ -1,1 +1,0 @@
-In this folder, put the function test files, one file for each function tested.

@@ -1,176 +1,229 @@
-﻿param (
-	# Key for publishing to psgallery
+﻿<#
+.SYNOPSIS
+	Builds the source code into a module package.
+	
+.DESCRIPTION
+	Compiles all the module source code into a package. All code gets inserted
+	into the main .psm1 file.
+	
+.PARAMETER ApiKey
+	The key for publishing to a repository (e.g. PSGallery).
+	
+.PARAMETER WorkingDirectory
+	The root folder for the whole project, containing the git files, build
+	files, module files, etc.
+  ! If running on Azure, don't specify any value.
+	
+.PARAMETER Repository
+	The repository to publish to, by default the PSGallery.
+	
+.PARAMETER TestRepo
+	Publish to the TESTING PSGallery instead.
+	
+.PARAMETER SkipPublish
+	Don't perform the publishing action.
+	
+.PARAMETER SkipArtifact
+	Don't package the module into a zipped file.
+	
+.EXAMPLE
+	PS C:\> .\build\vsts-build.ps1 -WorkingDirectory .\ -SkipPublish
+	
+	This is to just build and package the module locally.
+	
+.EXAMPLE
+	PS C:\> .\build\vsts-build.ps1 -WorkingDirectory .\ -SkipArtifact
+				-TestRepo -ApiKey ...
+	
+	This is to build and package the module to the TESTING PSGallery. Use this
+	for testing purposes.
+	
+.EXAMPLE
+	PS C:\> .\build\vsts-build.ps1 -ApiKey ...
+	
+	This is to build and package the module to the REAL PSGallery, and to 
+	package the module as a zip (for later use in uploading to the Github
+	Release page).
+	
+.NOTES
+	
+#>
+param (
+	[string]
 	$ApiKey,
 	
-	# The root folder for the whole project, containing the git files, build files, module files etc
-	# If running locally, specify it to the project root folder
+	[string]
 	$WorkingDirectory,
 	
-	# Repository to publish to
+	[string]
 	$Repository = 'PSGallery',
 	
-	# Publish to test PSGallery instead
-	# WARNING: This requires PowershellGet v2.2.2 for some reason. With v2.2.3 the command hangs
 	[switch]
 	$TestRepo,
 	
-	# Build but don't publish
 	[switch]
 	$SkipPublish,
 	
-	# Build but don't create artifacts
 	[switch]
 	$SkipArtifact
-	
 )
 
-#=======================
-# Handle Working Directory paths within Azure pipelines
+# Import helper functions.
+. "$PSScriptRoot\vsts-helpers.ps1"
+
+# Handle Working Directory paths within Azure pipelines.
 if (-not $WorkingDirectory) {
 	if ($env:RELEASE_PRIMARYARTIFACTSOURCEALIAS) {
 		$WorkingDirectory = Join-Path -Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY -ChildPath $env:RELEASE_PRIMARYARTIFACTSOURCEALIAS
 	}
-	else { $WorkingDirectory = $env:SYSTEM_DEFAULTWORKINGDIRECTORY }
+	else {
+		$WorkingDirectory = $env:SYSTEM_DEFAULTWORKINGDIRECTORY
+	}
 }
-#=======================
-# Import modules
+
+# Make any error stop this build process.
+$ErrorActionPreference = 'Stop'
+
+# Import required modules.
+WriteHeader -Message "Importing PowershellGet Module" -Colour Cyan
 Import-Module "PowershellGet" -RequiredVersion "2.2.2" -Verbose
+# Print the loaded module information to make it easier for error diagnostics
+# on the azure shell.
 Get-Module -Verbose
 
-#=======================
-# Prepare publish folder
-Write-Host "Creating and populating publishing directory"
-Remove-Item -Path "$WorkingDirectory\publish" -Force -Recurse -ErrorAction SilentlyContinue
-$publishDir = New-Item -Path $WorkingDirectory -Name "publish" -ItemType Directory -Force
+# Create the publish folder.
+WriteHeader -Message "Creating and populating publishing directory" -Colour Cyan
+Remove-Item -Path "$WorkingDirectory\publish" -Force -Recurse -ErrorAction 'Continue' | Out-Null
+$publishDir = New-Item -Path $WorkingDirectory -Name "publish" -ItemType Directory -Force -Verbose
 
-# Copy the module files from the git repo to the publish folder
+# Copy the module files from the root git repository to the publish folder.
+# Only copy the files which don't get "compiled", i.e. the module files
+# themselves, the help documentation, and the xml definitions.
+# The content of the actual code files will get compiled into the module file.
 New-Item -Path $publishDir.FullName -Name "ytdlWrapper" -ItemType Directory -Force | Out-Null
-Copy-Item -Path "$($WorkingDirectory)\ytdlWrapper\*" -Destination "$($publishDir.FullName)\ytdlWrapper\" -Recurse -Force -Exclude "*tests*"
+Copy-Item -Path "$WorkingDirectory\ytdlWrapper\*" -Destination "$($publishDir.FullName)\ytdlWrapper\" `
+	-Recurse -Force -Exclude "tests","internal","functions" -Verbose
 
-#=======================
-# Gather text data from scripts to compile
+# Gather text data from scripts for compilation.
+WriteHeader -Message "Gathering code from function files." -Colour Cyan
 $text = @()
 $processed = @()
 
-# Gather stuff to run before
-foreach ($line in (Get-Content "$($PSScriptRoot)\filesBefore.txt" | Where-Object { $_ -notlike "#*" })) {
-	
+# Gather stuff to run within the module before the main logic.
+foreach ($line in (Get-Content "$PSScriptRoot\filesBefore.txt" | Where-Object { $_ -notlike "#*" })) {
 	if ([string]::IsNullOrWhiteSpace($line)) { continue }
 	
-	# Get the full file paths within the publish directory
-	$basePath = Join-Path "$($publishDir.FullName)\ytdlWrapper" $line
+	# Resolve the paths to be relative to the publish directory.
+	$basePath = Join-Path "$WorkingDirectory\ytdlWrapper" $line
 	
-	# Get each file specified by filesBefore.txt
+	# Get each file specified by the current line inside of filesBefore.txt
 	foreach ($entry in (Resolve-Path -Path $basePath)) {
-		
-		# Get the file 
+		# Get the file, discard if it's a folder.
 		$item = Get-Item $entry
-		
 		if ($item.PSIsContainer) { continue }
+		# Only process each file once.
 		if ($item.FullName -in $processed) { continue }
 		
-		# Add the text content and mark as processed
+		# Add the text content and mark as processed.
 		$text += [System.IO.File]::ReadAllText($item.FullName)
 		$processed += $item.FullName
-		
 	}
-	
 }
 
-# Gather commands of all functions and add text content
-Get-ChildItem -Path "$($publishDir.FullName)\ytdlWrapper\internal\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
-	
+# Gather commands of all public and internal functions.
+Get-ChildItem -Path "$WorkingDirectory\ytdlWrapper\internal\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
+	$text += [System.IO.File]::ReadAllText($_.FullName)	
+}
+Get-ChildItem -Path "$WorkingDirectory\ytdlWrapper\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
 	$text += [System.IO.File]::ReadAllText($_.FullName)
-	
 }
 
-Get-ChildItem -Path "$($publishDir.FullName)\ytdlWrapper\functions\" -Recurse -File -Filter "*.ps1" | ForEach-Object {
-	
-	$text += [System.IO.File]::ReadAllText($_.FullName)
-	
-}
-
-# Gather stuff to run after
-foreach ($line in (Get-Content "$($PSScriptRoot)\filesAfter.txt" | Where-Object { $_ -notlike "#*" })) {
-	
+# Gather stuff to run within the module after the main logic.
+foreach ($line in (Get-Content "$PSScriptRoot\filesAfter.txt" | Where-Object { $_ -notlike "#*" })) {
 	if ([string]::IsNullOrWhiteSpace($line)) { continue }
 	
-	# Get the full file paths within the publish directory
-	$basePath = Join-Path "$($publishDir.FullName)\ytdlWrapper" $line
+	# Resolve the paths to be relative to the publish directory.
+	$basePath = Join-Path "$WorkingDirectory\ytdlWrapper" $line
 		
-	# Get each file specified by filesBefore.txt
+	# Get each file specified by the current line inside of filesAfter.txt
 	foreach ($entry in (Resolve-Path -Path $basePath)) {
-		
-		# Get the file 
+		# Get the file, discard if it's a folder.
 		$item = Get-Item $entry
-		
 		if ($item.PSIsContainer) { continue }
+		# Only process each file once.
 		if ($item.FullName -in $processed) { continue }
 		
-		# Add the text content and mark as processed
+		# Add the text content and mark as processed.
 		$text += [System.IO.File]::ReadAllText($item.FullName)
 		$processed += $item.FullName
-		
 	}
-	
 }
 
-#=======================
-# Update the psm1 file with all the read-in text content
-# This is done to reduce load times for the module, if all code is within the single psm1 file
+# Update the .psm1 file with all the read-in text content.
+# This is done to reduce load times for the module, if all code is within the 
+# single .psm1 file.
+WriteHeader -Message "Inserting the code into the module file" -Colour Cyan
 $fileData = Get-Content -Path "$($publishDir.FullName)\ytdlWrapper\ytdlWrapper.psm1" -Raw
-# Change the complied flag to true
-$fileData = $fileData.Replace('"<was not compiled>"', '"<was compiled>"')
-# Paste the text picked up from all files into the psm1 main file, and save
+# Change the complied flag to true.
+$fileData = $fileData.Replace('"<was not built>"', '"<was built>"')
+# Paste the text picked up from all files into the .psm1 main file, and save.
 $fileData = $fileData.Replace('"<compile code into here>"', ($text -join "`n`n"))
 [System.IO.File]::WriteAllText("$($publishDir.FullName)\ytdlWrapper\ytdlWrapper.psm1", $fileData, [System.Text.Encoding]::UTF8)
 
-#=======================
-# Publish
-if ($SkipPublish -eq $false) {
-	
-	if ($TestRepo -eq $true) {
+if (-not $SkipPublish) {
+	if ($TestRepo) {
+		# Publish to TESTING PSGallery.
+		WriteHeader -Message "TEST Publishing to PSGallery" -Colour Green
 		
-		# Publish to TESTING PSGallery
-		Write-Host "Publishing the ytdlWrapper module to TEST PSGallery"
+		# Register testing repository.
+		Register-PSRepository -Name "test-repo" -SourceLocation "https://www.poshtestgallery.com/api/v2" `
+			-PublishLocation "https://www.poshtestgallery.com/api/v2/package" -InstallationPolicy Trusted -Verbose `
+			-ErrorAction 'Continue'
+		Publish-Module -Path "$($publishDir.FullName)\ytdlWrapper" -NuGetApiKey $ApiKey -Force `
+			-Repository "test-repo" -Verbose
 		
-		# Register testing repository
-		Register-PSRepository -Name "test-repo" -SourceLocation "https://www.poshtestgallery.com/api/v2" -PublishLocation "https://www.poshtestgallery.com/api/v2/package" -InstallationPolicy Trusted -Verbose
-		Publish-Module -Path "$($publishDir.FullName)\ytdlWrapper" -NuGetApiKey $ApiKey -Force -Repository "test-repo" -Verbose
+		WriteHeader -Message "Waiting 60 seconds before testing download" -Colour Green
+		Start-Sleep -Seconds 60
 		
-		Write-Host "Published package to test repo. Waiting 30 seconds."
-		Start-Sleep -Seconds 30
-		
-		# Uninstall module if it already exists, to then install the test-module
-		Uninstall-Module -Name "ytdlWrapper" -Force -Verbose
+		# Uninstall the module if it already exists, to then test the
+		# installation of the module from the test PSGallery.
+		WriteHeader -Message "Installing module from PSGallery" -Colour Green
+		Uninstall-Module -Name "ytdlWrapper" -Force -Verbose -ErrorAction 'Continue'
 		Install-Module -Name "ytdlWrapper" -Repository "test-repo" -Force -AcceptLicense -SkipPublisherCheck -Verbose
-		Write-Host "Test ytdlWrapper module installed"
+		Write-Host "Test ytdlWrapper module installed." -ForegroundColor Green
 		
-		# Remove the testing repository
+		# Test if the module has been downloaded and imported correctly.
+		WriteHeader -Message "Importing module" -Colour Green
+		Import-Module -Name "ytdlWrapper" -Verbose
+		Get-Module -Verbose
+		
+		# Remove the testing repository.
 		Unregister-PSRepository -Name "test-repo" -Verbose
-		
-	}else {
-		
-		# Publish to PSGallery
-		Write-Host "Publishing the ytdlWrapper module to $($Repository)"
-		Publish-Module -Path "$($publishDir.FullName)\ytdlWrapper" -NuGetApiKey $ApiKey -Force -Repository $Repository -Verbose
-		
 	}
-
+	else {
+		# Publish to real repository.
+		WriteHeader -Message "Publishing to $Repository" -Colour Green
+		Publish-Module -Path "$($publishDir.FullName)\ytdlWrapper" -NuGetApiKey $ApiKey -Force `
+			-Repository $Repository -Verbose
+	}
 }
 
-#=======================
-# Create Artifact
-if ($SkipArtifact -eq $false) {
-	
+if (-not $SkipArtifact) {
+	# Get the module version number for file labelling.
 	$moduleVersion = (Import-PowerShellDataFile -Path "$PSScriptRoot\..\ytdlWrapper\ytdlWrapper.psd1").ModuleVersion
-	# Move the module contents to the desired folder structure
-	New-Item -ItemType Directory -Path "$($publishDir.FullName)\ytdlWrapper\" -Name "$moduleVersion" -Force
-	Move-Item -Path "$($publishDir.FullName)\ytdlWrapper\*" -Destination "$($publishDir.FullName)\ytdlWrapper\$moduleVersion\" -Exclude "*$moduleVersion*" -Force -Verbose
 	
-	# Create a packaged zip file
-	Compress-Archive -Path "$($publishDir.FullName)\ytdlWrapper" -DestinationPath "$($publishDir.FullName)\ytdlWrapper-v$($moduleVersion).zip" -Verbose
+	# Move the module contents to a version-labelled subfolder.
+	WriteHeader -Message "Creating Artifact. Moving content to version subfolder" -Colour Magenta
+	New-Item -ItemType Directory -Path "$($publishDir.FullName)\ytdlWrapper\" -Name "$moduleVersion" -Force | Out-Null
+	Move-Item -Path "$($publishDir.FullName)\ytdlWrapper\*" `
+		-Destination "$($publishDir.FullName)\ytdlWrapper\$moduleVersion\" -Exclude "*$moduleVersion*" -Force -Verbose
 	
-	# Write the module number as a azure pipeline variable for publish task
+	# Create a packaged zip file of the module folder.
+	WriteHeader -Message "Packaging module into archive" -Colour Magenta
+	Compress-Archive -Path "$($publishDir.FullName)\ytdlWrapper" `
+		-DestinationPath "$($publishDir.FullName)\ytdlWrapper-v$($moduleVersion).zip" -Verbose
+	
+	# Write out the module number as a azure pipeline variable for the 
+	# later run publish task.
 	Write-Host "##vso[task.setvariable variable=version;isOutput=true]$moduleVersion"
 }

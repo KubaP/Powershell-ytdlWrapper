@@ -77,7 +77,7 @@
 		
 	}
 	
-	# Return the list as a List object, rather than as an array (by default)
+	# Return the list as a <List> object, rather than as an array (by default)
 	Write-Output $jobList -NoEnumerate
 	
 }

@@ -1,5 +1,4 @@
-﻿# List all files that are loaded in the postimport.ps1
-# In the order they are loaded during postimport
+﻿# List all files that are loaded in the postimport.ps1.
+# In the order they are loaded during postimport!
 
-internal\tepp\*.tepp.ps1
-internal\tepp\assignment.ps1
+internal\tepp.completion.ps1

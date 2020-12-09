@@ -119,7 +119,11 @@
 		[hashtable]$variableList = [ordered]@{}		
 		foreach ($definition in $definitionList) {
 			
-			$variableList.Add($definition, $PSBoundParameters[$definition])
+			if ($null -ne $PSBoundParameters[$definition]) {
+				$variableList.Add($definition, $PSBoundParameters[$definition])
+			}else {
+				
+			}
 			
 		}
 		

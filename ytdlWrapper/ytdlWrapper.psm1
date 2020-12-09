@@ -1,123 +1,166 @@
-﻿# Create some global variables
+﻿# Create module-wide variables.
 $script:ModuleRoot = $PSScriptRoot
-$script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\ytdlWrapper.psd1").ModuleVersion
+$script:ModuleVersion = (Import-PowerShellDataFile -Path "$ModuleRoot\ytdlWrapper.psd1").ModuleVersion
+$script:DataPath = "$env:APPDATA\Powershell\ytdlWrapper\database.xml"
 
-$script:DataPath = "$env:APPDATA\Powershell\ytdlWrapper"
+# For the debug output to be displayed, $DebugPreference must be set
+# to 'Continue' within the current session.
+Write-Debug "`e[4mMODULE-WIDE VARIABLES`e[0m"
+Write-Debug "Module root folder: $ModuleRoot"
+Write-Debug "Module version: $ModuleVersion"
+Write-Debug "Database file: $DataPath"
 
-if ((Test-Path -Path $script:DataPath) -eq $false) {
-	
-	# Create the module data storage folders if they don't exist
-	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell" -ErrorAction SilentlyContinue
-	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell" -Name "ytdlWrapper"
-	
+# Create the module data-storage folder if it doesn't exist.
+if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ignore)) {
+	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell\ytdlWrapper" -Force -ErrorAction Stop
+	Write-Debug "Created database folder!"
 }
 
-if ($null -eq (Get-Command "youtube-dl.exe" -ErrorAction SilentlyContinue)) {
-	
-	# Warn the user that youtube-dl.exe cannot be found since without the binary in PATH,
-	# the module won't function correctly.
-	Write-Warning "Could not find youtube-dl.exe in PATH. Install it or modify the PATH variable."
-	
-}
+# Potentially force this module script to dot-source the files, rather than 
+# load them in an alternative method.
+$doDotSource = $global:ModuleDebugDotSource
+$doDotSource = $true # Needed to make code coverage tests work
 
-# Detect whether at some level dotsourcing was enforced
-$script:doDotSource = $global:ModuleDebugDotSource
-$script:doDotSource = $true #! Needed to make code coverage tests work
-# Detect whether at some level loading individual module files, rather than the compiled module was enforced
-$importIndividualFiles = $global:ModuleDebugIndividualFiles
-
-# Resolve-Path function which deals with non-existent paths
 function Resolve-Path_i {
+	<#
+	.SYNOPSIS
+		Resolves a path, gracefully handling a non-existent path.
+		
+	.DESCRIPTION
+		Resolves a path into the full path. If the path is invalid,
+		an empty string will be returned instead.
+		
+	.PARAMETER Path
+		The path to resolve.
+		
+	.EXAMPLE
+		PS C:\> Resolve-Path_i -Path "~\Desktop"
+		
+		Returns 'C:\Users\...\Desktop"
+
+	#>
 	[CmdletBinding()]
 	Param (
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
 		[string]
-		$Path # Path to resolve
+		$Path
 	)
 	
-	# Run the command silently
-	$resolvedPath = Resolve-Path $Path -ErrorAction SilentlyContinue
+	# Run the command, silencing errors.
+	$resolvedPath = Resolve-Path -Path $Path -ErrorAction Ignore
 	
-	# Variable will be null if $Path doesn't exist
-	# In that case set it to an empty string
+	# If NULL, then just return an empty string.
 	if ($null -eq $resolvedPath) {
 		$resolvedPath = ""
 	}
 	
-	$resolvedPath
+	Write-Output $resolvedPath
 }
-
-# If script detects its running from original dev environment, import individually since module won't be compiled
-if (Test-Path (Resolve-Path_i -Path "$($script:ModuleRoot)\..\.git")) { $importIndividualFiles = $true }
-if ("<was not compiled>" -eq '<was not compiled>') { $importIndividualFiles = $true }
-
-# Imports a module file, either through dot-sourcing or through invoking the script
 function Import-ModuleFile {
 	<#
 	.SYNOPSIS
 		Loads files into the module on module import.
-	
+		Only used in the project development environment.
+		In built module, compiled code is within this module file.
+		
 	.DESCRIPTION
 		This helper function is used during module initialization.
-		It should always be dotsourced itself, in order to proper function.
+		It should always be dot-sourced itself, in order to properly function.
 		
-		This provides a central location to react to files being imported, if later desired
-	
 	.PARAMETER Path
-		The path to the file to load
-	
+		The path to the file to load.
+		
 	.EXAMPLE
 		PS C:\> . Import-ModuleFile -File $function.FullName
 		
-		Imports the file stored in $function according to import policy
+		Imports the code stored in the file $function according to import policy.
+		
 	#>
 	[CmdletBinding()]
 	Param (
+		[Parameter(Mandatory = $true, Position = 0)]
 		[string]
-		$Path # Path of module file
+		$Path
 	)
 	
-	# Get the resolved path to avoid any cross-OS issues
+	# Get the resolved path to avoid any cross-OS issues.
 	$resolvedPath = $ExecutionContext.SessionState.Path.GetResolvedPSPathFromPSPath($Path).ProviderPath
+	
 	if ($doDotSource) {
-		
-		# Load the script through dot-sourcing
-		. $resolvedPath
-		
-	}else {
-		
-		# Load the script through different method (unknown atm)
+		# Load the file through dot-sourcing.
+		. $resolvedPath	
+		Write-Debug "Dot-sourcing file: $resolvedPath"
+	}
+	else {
+		# Load the file through different method (unknown atm?).
 		$ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($resolvedPath))), $null, $null) 
-		
+		Write-Debug "Importing file: $resolvedPath"
 	}
 }
 
-# Load individual files if not compiled
+# ISSUE WITH BUILT MODULE FILE
+# ----------------------------
+# If this module file contains the compiled code below, as this is a "packaged"
+# build, then that code *must* be loaded, and you cannot individually import
+# and of the code files, even if they are there.
+# 
+# 
+# If this module file is built, then it contains the class definitions below,
+# and on Import-Module, this file is AST analysed and those class definitions 
+# are read-in and loaded.
+# 
+# It's only once a command is run that this module file is executed, and if at
+# that point this file starts to individually import the project files, it will
+# end up re-defining the classes, and apparently that seems to cause issues 
+# later down the line.
+# 
+# 
+# Therefore to prevent this issue, if this module file has been built and it
+# contains the compile code below, that code will be used, and nothing else.
+# 
+# The build script should also not package the individual files, so that the
+# *only* possibility is to load the compiled code below and there is no way
+# the individual files can be imported, as they don't exist.
+
+
+# If this module file contains the compiled code, import that, but if it
+# doesn't, then import the individual files instead.
+$importIndividualFiles = $false
+if ("<was not built>" -eq '<was not built>') {
+	$importIndividualFiles = $true
+	Write-Debug "Module not built! Importing individual files."
+}
+
+Write-Debug "`e[4mIMPORT DECISION`e[0m"
+Write-Debug "Dot-sourcing: $doDotSource"
+Write-Debug "Importing individual files: $importIndividualFiles"
+
+# If importing code as individual files, perform the importing.
+# Otherwise, the compiled code below will be loaded.
 if ($importIndividualFiles) {
+	Write-Debug "!IMPORTING INDIVIDUAL FILES!"
 	
-	# Execute Preimport actions
-	. Import-ModuleFile -Path "$ModuleRoot\internal\scripts\preimport.ps1"
+	# Execute Pre-import actions.
+	. Import-ModuleFile -Path "$ModuleRoot\internal\preimport.ps1"
 	
-	# Import all internal functions
-	foreach ($function in (Get-ChildItem "$ModuleRoot\internal\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {
-						
-		. Import-ModuleFile -Path $function.FullName
-		
+	# Import all internal functions.
+	foreach ($file in (Get-ChildItem "$ModuleRoot\internal\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {
+		. Import-ModuleFile -Path $file.FullName
 	}
 	
-	# Import all public functions
-	foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {	
-			
-		. Import-ModuleFile -Path $function.FullName
-		
+	# Import all public functions.
+	foreach ($file in (Get-ChildItem "$ModuleRoot\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {	
+		. Import-ModuleFile -Path $file.FullName
 	}
 	
-	# Execute Postimport actions
-	. Import-ModuleFile -Path "$ModuleRoot\internal\scripts\postimport.ps1"
+	# Execute Post-import actions.
+	. Import-ModuleFile -Path "$ModuleRoot\internal\postimport.ps1"
 	
-	# End execution here, do not load compiled code below
+	# End execution here, do not load compiled code below (if there is any).
 	return
 }
+
+Write-Debug "!LOADING COMPILED CODE!"
 
 #region Load compiled code
 "<compile code into here>"

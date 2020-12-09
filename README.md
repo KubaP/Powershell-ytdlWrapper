@@ -71,7 +71,7 @@ git clone https://github.com/KubaP/Powershell-ytdlWrapper.git
 Run the following commands in this order:
 ```powershell
 & .\build\vsts-prerequisites.ps1
-& .\build\vsts-valiate.ps1
+& .\build\vsts-validate.ps1
 & .\build\vsts-build.ps1 -WorkingDirectory .\ -SkipPublish
 ```
 The built module will be located in the `.\publish` folder.

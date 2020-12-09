@@ -1,6 +1,6 @@
-﻿# List of forbidden commands
+﻿# List of forbidden commands.
 $global:BannedCommands = @(	
-	# Use CIM instead where possible
+	# Use CIM instead where possible.
 	'Get-WmiObject',
 	'Invoke-WmiMethod',
 	'Register-WmiEvent',
