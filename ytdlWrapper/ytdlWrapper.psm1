@@ -2,7 +2,8 @@
 $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$ModuleRoot\ytdlWrapper.psd1").ModuleVersion
 $script:Folder = "$env:APPDATA\Powershell\ytdlWrapper"
-$script:DataPath = "$env:APPDATA\Powershell\ytdlWrapper\database.xml"
+$script:TemplateData = "$env:APPDATA\Powershell\ytdlWrapper\template-database.xml"
+$script:JobData = "$env:APPDATA\Powershell\ytdlWrapper\job-database.xml"
 
 # For the debug output to be displayed, $DebugPreference must be set
 # to 'Continue' within the current session.
@@ -14,7 +15,9 @@ Write-Debug "Database file: $DataPath"
 # Create the module data-storage folder if it doesn't exist.
 if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ignore)) {
 	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell\ytdlWrapper" -Force -ErrorAction Stop
-	Write-Debug "Created database folder!"
+	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Templates" -Force -ErrorAction Stop
+	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Jobs" -Force -ErrorAction Stop
+	Write-Debug "Created database folders!"
 }
 
 # Potentially force this module script to dot-source the files, rather than 
