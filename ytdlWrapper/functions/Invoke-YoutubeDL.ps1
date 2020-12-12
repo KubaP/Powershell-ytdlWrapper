@@ -3,25 +3,29 @@
 	Invoke youtube-dl
 	
 .DESCRIPTION
-	Invoke the youtube-dl process, specifying either an already defined job or a configuration file.
+	Invoke the youtube-dl process, specifying either an already defined job or
+	a configuration file.
 	
 .PARAMETER Path
-	The path of a youtube-dl configuration file to use.
+	The location of a youtube-dl configuration file to use.
+	
+.PARAMETER Template
+	The name of a template to use.
 	
 .PARAMETER JobName
 	The name of the job to run.
 	
 .EXAMPLE
-	PS C:\> Invoke-YoutubeDL -Path "~/conf.txt" -Url "//some/url/"
+	PS C:\> Invoke-YoutubeDl -Path ~\template.conf -Url "https:\some\url"
 	
-	Invokes youtube-dl using the specified configuration path, with has an input definition "Url" that is 
-	passed in as a parameter.
+	Invokes youtube-dl using the specified configuration path, with has an
+	input definition "Url" that is passed in as a parameter.
 	
 .EXAMPLE
-	PS C:\> Invoke-YoutubeDL -JobName "test"
+	PS C:\> Invoke-YoutubeDl -JobName "test"
 	
-	Invokes youtube-dl using the configuration path specified by the job, and any variables which may be 
-	defined for this job.
+	Invokes youtube-dl using the configuration path specified by the job, and
+	any variables which may be defined for this job.
 	
 .INPUTS
 	None
@@ -31,29 +35,42 @@
 	
 .NOTES
 	
-	
 #>
-function Invoke-YoutubeDL {
+function Invoke-YoutubeDl
+{
+	# TODO: Support multiple jobs/templates.
+	# TODO: Implement SupportsShouldProcess.
 	
 	[CmdletBinding()]
-	param (
+	param
+	(
 		
-		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config")]
-		[Alias("ConfigPath")]
-		[string]
-		$Path,
+		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config", ValueFromPipelineByPropertyName = $true)]
+		[Alias("Path")]
+		[string[]]
+		$ConfigurationFilePath,
 		
-		# Tab completion
+		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Template")]
+		[switch]
+		$Template,
+		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
-		[Alias("JobName", "Name")]
-		[string]
-		$Job
+		[switch]
+		$Job,
+		
+		# TODO: Tab completion.
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Template", ValueFromPipelineByPropertyName = $true)]
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Job", ValueFromPipelineByPropertyName = $true)]
+		[Alias("Name")]
+		[string[]]
+		$Names
 		
 	)
 	
 	dynamicparam {
-		# Only run the variable detection logic if a file is given in and
-		# exists, i.e. if invoking youtube-dl against a config file.
+		# Only run the input detection logic if a file is given in and
+		# exists, i.e. if invoking youtube-dl against a config file,
+		# Or if using a template.
 		if ($null -ne $Path -and (Test-Path -Path $Path)) {
 			# Retrieve all instances of input definitions in the config file.
 			$definitionList = Read-ConfigDefinitions -Path $Path -InputDefinitions
@@ -75,12 +92,15 @@ function Invoke-YoutubeDL {
 			
 			return $parameterDictionary
 		}
+		elseif ($null -ne $Template) {
+			# TODO: Retrieve the template inputs.
+		}
 	}
 	
 	process {
 		if ($PSCmdlet.ParameterSetName -eq "Config") {
 			# Validate the config file exists.
-			if ((Test-Path -Path $Path) -eq $false) {
+			if (-not (Test-Path -Path $Path)) {
 				Write-Error "The config path: '$Path' points to an invalid/non-existent location!"
 				return
 			}
@@ -217,4 +237,5 @@ function Invoke-YoutubeDL {
 			
 		}
 	}
+	
 }

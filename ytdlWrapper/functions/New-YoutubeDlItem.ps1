@@ -15,14 +15,14 @@
 	This cmdlet can optionally keep the configuration files in their original
 	location if desired.
 	
-.PARAMETER CreateTemplate
+.PARAMETER Template
 	Indicates that this cmdlet will be creating a youtube-dl template.
 	
-.PARAMETER CreateJob
+.PARAMETER Job
 	Indicates that this cmdlet will be creating a youtube-dl job.
 	
 .PARAMETER Name
-	Specifies the name/identifier of this template/job; must be unique.
+	Specifies the name of the item to be created; must be unique.
 	
 .PARAMETER Path
 	Specifies the path of the location of the configuration file to use. The
@@ -60,20 +60,20 @@
 	This cmdlet is aliased by default to '#TODO'.
 	
 .EXAMPLE
-	PS C:\> New-YoutubeDlItem -CreateTemplate -Name "music" -Path ~\music.conf
+	PS C:\> New-YoutubeDlItem -Template -Name "music" -Path ~\music.conf
 	
 	Creates a new youtube-dl template named "music", and moves the configuration
 	file from the home directory to the module appdata folder.
 	
 .EXAMPLE
-	PS C:\> New-YoutubeDlItem -CreateTemplate -Name "music" -Path ~\music.conf
+	PS C:\> New-YoutubeDlItem -Template -Name "music" -Path ~\music.conf
 				-DontMoveConfigurationFile
 				
 	Creates a new youtube-dl template named "music", but doesn't move the
 	configuration file from the home directory.
 	
 .EXAMPLE
-	PS C:\> New-YoutubeDlJob -CreateJob -Name "archive" -Path ~\archive.conf
+	PS C:\> New-YoutubeDlJob -Job -Name "archive" -Path ~\archive.conf
 				-Autonumber "5"
 				
 	Creates a new youtube-dl job named "archive", and moves the configuration
@@ -90,21 +90,19 @@ function New-YoutubeDlItem
 	(
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Template")]
-		[Alias("Template")]
 		[switch]
-		$CreateTemplate,
+		$Template,
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
-		[Alias("Job")]
 		[switch]
-		$CreateJob,
+		$Job,
 		
 		[Parameter(Position = 1, Mandatory = $true)]
 		[string]
 		$Name,
 		
 		[Parameter(Position = 2, Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-		[Alias("ConfigPath")]
+		[Alias("ConfigurationFilePath")]
 		[string]
 		$Path,
 		
@@ -116,7 +114,7 @@ function New-YoutubeDlItem
 	
 	dynamicparam
 	{
-		if ($CreateJob -and ($null -ne $Path) -and (Test-Path -Path $Path))
+		if ($Job -and ($null -ne $Path) -and (Test-Path -Path $Path))
 		{
 			# Retrieve all instances of variable definitions in the config file.
 			$definitionList = Read-ConfigDefinitions -Path $Path -VariableDefinitions
@@ -150,7 +148,7 @@ function New-YoutubeDlItem
 			return
 		}
 		
-		if ($CreateTemplate)
+		if ($Template)
 		{
 			$templateList = Read-Templates
 			
@@ -194,7 +192,7 @@ function New-YoutubeDlItem
 			
 			Write-Output $newTemplate
 		}
-		elseif ($CreateJob)
+		elseif ($Job)
 		{
 			$jobList = Read-Jobs
 			
