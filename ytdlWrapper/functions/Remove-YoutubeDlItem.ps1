@@ -3,20 +3,20 @@
 	Deletes a specified youtube-dl item.
 	
 .DESCRIPTION
-	The `New-YoutubeDlItem` cmdlet deletes one or more youtube-dl template or
-	job definitions.
+	The `Remove-YoutubeDlItem` cmdlet deletes one or more youtube-dl template
+	or job definitions, specified by their name(s).
 	
-.PARAMETER DeleteTemplate
+.PARAMETER Template
 	Indicates that this cmdlet will be deleting a youtube-dl template.
 	
-.PARAMETER DeleteJob
+.PARAMETER Job
 	Indicates that this cmdlet will be deleting a youtube-dl job.
 	
 .PARAMETER Names
 	Specifies the name(s) of the items to delete.
 	
 	Once you specify the '-DeleteTemplate/Job' option, this parameter will
-	autocomplete to existing names for the respective item type.
+	autocomplete to valid existing names for the respective item type.
 	
 .PARAMETER WhatIf
 	Shows what would happen if the cmdlet runs. The cmdlet does not run.
@@ -37,12 +37,12 @@
 	This cmdlet is aliased by default to '#TODO'.
 	
 .EXAMPLE
-	PS C:\> Remove-YoutubeDlItem -DeleteTemplate -Name "music"
+	PS C:\> Remove-YoutubeDlItem -Template -Names "music","video"
 	
-	Deletes a youtube-dl template named "music".
+	Deletes the youtube-dl templates named "music" and "video".
 	
 .EXAMPLE
-	PS C:\> Remove-YoutubeDlItem -DeleteJob -Name "archive"
+	PS C:\> Remove-YoutubeDlItem -Job -Name "archive"
 	
 	Deletes a youtube-dl job named "archive".
 	
@@ -55,16 +55,14 @@ function Remove-YoutubeDlItem
 	(
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Template")]
-		[Alias("Template")]
 		[switch]
-		$DeleteTemplate,
+		$Template,
 		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Job")]
-		[Alias("Job")]
 		[switch]
-		$DeleteJob,
+		$Job,
 		
-		# Tab completion
+		# TODO: Tab completion
 		[Parameter(Position = 1, Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
 		[Alias("Name")]
 		[string[]]
@@ -72,50 +70,54 @@ function Remove-YoutubeDlItem
 		
 	)
 	
+	begin
+	{
+		# Read in the correct list of templates or jobs.
+		$objectList = if ($Template)
+		{
+			Read-Templates
+		}
+		else
+		{
+			Read-Jobs
+		}
+		
+		# Get the correct databaseb path.
+		$databasePath = if ($Template)
+		{
+			$script:TemplateData
+		}
+		else
+		{
+			$script:JobData
+		}
+	}
+	
 	process
 	{
+		
+		# Iterate through all the passed in names.
 		foreach ($name in $Names)
 		{
-			if ($DeleteTemplate)
+			# If the object doesn't exist, warn the user.
+			$object = $objectList | Where-Object { $_.Name -eq $name }
+			if ($null -eq $object)
 			{
-				$templateList = Read-Templates
-				
-				# Find the template by name.
-				$template = $templateList | Where-Object { $_.Name -eq $name }
-				if ($null -eq $template)
-				{
-					Write-Error "There is no template called: '$name'."
-					continue
-				}
-				
-				# Save the modified database.
-				$templateList.Remove($template) | Out-Null
-				if ($PSCmdlet.ShouldProcess("$script:TemplateData", "Overwrite database with modified contents"))
-				{
-					Export-Clixml -Path $script:TemplateData -InputObject $templateList -WhatIf:$false `
-						-Confirm:$false | Out-Null
-				}
+				Write-Error "There is no template called: '$name'."
+				continue
 			}
-			elseif ($DeleteJob)
-			{
-				$jobList = Read-Jobs
-				
-				# Find the job by name.
-				$job = $jobList | Where-Object { $_.Name -eq $name }
-				if ($null -eq $job)
-				{
-					Write-Error "There is no job called: '$name'."
-					continue
-				}
-				
-				# Save the modified database.
-				$jobList.Remove($job) | Out-Null
-				if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
-				{
-					Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false `
-						-Confirm:$false | Out-Null
-				}
-			}
+			
+			# Remove the object from the list.
+			$objectList.Remove($object)
+		}
+	}
+	
+	end
+	{
+		# Save the modified database.
+		if ($PSCmdlet.ShouldProcess($databasePath, "Overwrite database with modified contents"))
+		{
+			Export-Clixml -Path $databasePath -InputObject $objectList -WhatIf:$false -Confirm:$false | Out-Null
 		}
 	}
 }
