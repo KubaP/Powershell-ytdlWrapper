@@ -5,7 +5,6 @@
 	MismatchedVariables
 	HasInputs
 }
-# TODO: UninitialiseVariables
 
 class YoutubeDlJob
 {

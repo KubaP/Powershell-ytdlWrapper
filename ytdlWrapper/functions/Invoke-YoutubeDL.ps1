@@ -216,18 +216,27 @@ function Invoke-YoutubeDl
 						Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
 						return
 					}
-					"MismatchedVariables"
-					{
-						Write-Error "The job: '$name' has a mismatch between the variables stored in the database and the variable definitions within the configuration file!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
-						return
-					}
 					"HasInputs"
 					{
 						Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
 						return
 					}
+					"MismatchedVariables"
+					{
+						Write-Error "The job: '$name' has a mismatch between the variables stored in the database and the variable definitions within the configuration file!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+						return
+					}
 				}
 				
+				# Check that each variable has an initialised value, since this 
+				# be false if the configuration file is edited.
+				foreach ($key in $jobObject._Variables.Keys)
+				{
+					if ([system.string]::IsNullOrWhiteSpace($jobObject._Variables[$key]))
+					{
+						Write-Error "The job: '$name' has an uninitialised variable: '$key'! This must be initialised before running this job.`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+					}
+				}
 				$completedJobContent = $jobObject.CompleteJob()
 				
 				# Write modified config file (with substituted variable values) to a
