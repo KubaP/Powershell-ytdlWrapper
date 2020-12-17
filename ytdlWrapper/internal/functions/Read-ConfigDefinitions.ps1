@@ -13,6 +13,7 @@
 	
 .OUTPUTS
 	System.Collections.Generic.List[string]
+	Hashtable[string, scriptblock]
 	
 .NOTES
 	
@@ -42,9 +43,16 @@ function Read-ConfigDefinitions
 		
 	)
 	
+	# If the file doesn't exist, quit early.
+	if (-not (Test-Path -Path $Path))
+	{
+		return $null
+	}
+	
 	# Read in the config file as a single string.
 	$configFilestream = Get-Content -Path $Path -Raw
 	$definitionList = New-Object -TypeName System.Collections.Generic.List[string]
+	$hashList = New-Object -TypeName hashtable
 	
 	if ($InputDefinitions -eq $true)
 	{
@@ -83,7 +91,7 @@ function Read-ConfigDefinitions
 		{
 			# .Group[1] is the whole match
 			# .Group[2] is the 'some-parameter' or 's' match
-			# .Group[3] is the 'name' match
+			# .Group[3] is 	the 'name' match
 			# .Group[4] is the 'scriptblock' match
 			if ($VariableDefinitions -eq $true)
 			{
@@ -91,11 +99,18 @@ function Read-ConfigDefinitions
 			}
 			elseif ($VariableScriptblocks -eq $true)
 			{
-				$definitionList.Add($match.Groups[4].Value)
+				$hashList[$match.Groups[3].Value] = $match.Groups[4].Value
 			}
 		}
 	}
 	
-	# Return the list as a List object, rather than as an array (by default).
-	Write-Output $definitionList -NoEnumerate
+	if ($VariableScriptblocks)
+	{
+		Write-Output $hashList
+	}
+	else
+	{
+		# Return the list as a List object, rather than as an array (by default).
+		Write-Output $definitionList -NoEnumerate
+	}
 }

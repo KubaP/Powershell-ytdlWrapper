@@ -40,7 +40,7 @@ function Invoke-YoutubeDl
 {
 	# TODO: Implement SupportsShouldProcess.
 	
-	[CmdletBinding()]
+	[CmdletBinding(SupportsShouldProcess = $true)]
 	param
 	(
 		
@@ -70,12 +70,11 @@ function Invoke-YoutubeDl
 	{
 		# Only run the input detection logic if a template is given, and only
 		# one template is given, and the template exists, and the template
-		# has a valid file path.
+		# has a valid configuration file path.
 		if (-not $Template) { return }
 		if ($null -eq $Names) { return }
 		$name = $Names[0]
 		if ([system.string]::IsNullOrWhiteSpace($name)) { return }
-		
 		$templateList = Read-Templates
 		$templateObject = $templateList | Where-Object { $_.Name -eq $name }
 		if ($null -eq $templateObject) { return }
@@ -114,7 +113,10 @@ function Invoke-YoutubeDl
 				return
 			}
 			
-			Invoke-Process -Path $Path
+			if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
+			{
+				Invoke-Process -Path "$script:Folder\$hash.conf"
+			}
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq "Template")
 		{
@@ -132,12 +134,13 @@ function Invoke-YoutubeDl
 			$templateObject = $templateList | Where-Object { $_.Name -eq $name }
 			if ($null -eq $templateObject)
 			{
-				Write-Error "There is no template called: '$name'."
+				Write-Error "There is no template named: '$name'."
 				return
 			}
 			
 			# Validate that the template can be used.
-			switch ($templateObject.GetState()) {
+			switch ($templateObject.GetState())
+			{
 				"InvalidPath"
 				{
 					Write-Error "The template: '$name' has a configuration file path: '$($templateObject.Path)' which is invalid!"
@@ -176,13 +179,21 @@ function Invoke-YoutubeDl
 			# string to use proper escape sequences.
 			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedTemplateContent)
 			$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-			Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedTemplateContent `
-				-ErrorAction Stop
-			
-			Invoke-Process -Path "$script:Folder\$hash.conf"
+			if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Create temporary configuration file"))
+			{
+				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedTemplateContent `
+					-ErrorAction Stop
+			}
+			if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
+			{
+				Invoke-Process -Path "$script:Folder\$hash.conf"
+			}
 			
 			# Clean up the temporary file.
-			Remove-Item -Path "$script:Folder\$hash.conf" -Force
+			if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Delete temporary configuration file"))
+			{
+				Remove-Item -Path "$script:Folder\$hash.conf" -Force
+			}
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq "Job")
 		{
@@ -193,12 +204,13 @@ function Invoke-YoutubeDl
 				$jobObject = $jobList | Where-Object { $_.Name -eq $name }
 				if ($null -eq $jobObject)
 				{
-					Write-Error "There is no job called: '$name'."
+					Write-Error "There is no job named: '$name'."
 					return
 				}
 				
 				# Validate that the job can be used.
-				switch ($jobObject.GetState()) {
+				switch ($jobObject.GetState())
+				{
 					"InvalidPath"
 					{
 						Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
@@ -224,12 +236,21 @@ function Invoke-YoutubeDl
 				# string to use proper escape sequences.
 				$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedJobContent)
 				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedJobContent
+				if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Create temporary configuration file"))
+				{
+					Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedTemplateContent `
+						-ErrorAction Stop
+				}
+				if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
+				{
+					Invoke-Process -Path "$script:Folder\$hash.conf"
+				}
 				
-				Invoke-Process -Path "$script:Folder\$hash.conf"
-				
-				# Delete the temp config file since its no longer needed.
-				Remove-Item -Path "$script:Folder\$hash.conf" -Force
+				# Clean up the temporary file.
+				if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Delete temporary configuration file"))
+				{
+					Remove-Item -Path "$script:Folder\$hash.conf" -Force
+				}
 				
 				# If a scriptblock didn't return a value, warn the user.
 				$return = $jobObject.ExecuteScriptblocks()
@@ -239,9 +260,11 @@ function Invoke-YoutubeDl
 					return
 				}
 				
-				# TODO: should process
-				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
-					| Out-Null
+				if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
+				{
+					Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
+						| Out-Null
+				}
 			}
 		}
 	}

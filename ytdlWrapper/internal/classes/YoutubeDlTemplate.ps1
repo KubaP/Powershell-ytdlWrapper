@@ -16,12 +16,13 @@ class YoutubeDlTemplate
 		$this.Path = $path
 	}
 	
-	[TemplateState] GetState() {
+	[TemplateState] GetState()
+	{
 		return [YoutubeDlTemplate]::GetState($this.Path)
 	}
 	
-	static [TemplateState] GetState([string]$path) {
-		
+	static [TemplateState] GetState([string]$path)
+	{
 		# Check for an invalid path.
 		if (-not (Test-Path -Path $path))
 		{

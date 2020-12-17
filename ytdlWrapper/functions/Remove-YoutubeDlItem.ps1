@@ -103,12 +103,12 @@ function Remove-YoutubeDlItem
 			$object = $objectList | Where-Object { $_.Name -eq $name }
 			if ($null -eq $object)
 			{
-				Write-Error "There is no $(if($Template){`"Template`"}else{`"Job`"}) called: '$name'."
+				Write-Error "There is no $(if($Template){`"template`"}else{`"job`"}) named: '$name'."
 				continue
 			}
 			
 			# Remove the object from the list.
-			$objectList.Remove($object)
+			$objectList.Remove($object) | Out-Null
 		}
 	}
 	

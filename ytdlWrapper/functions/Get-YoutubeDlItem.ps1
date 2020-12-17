@@ -41,7 +41,7 @@
 	This cmdlet is aliased by default to '#TODO'.
 	
 .EXAMPLE
-	PS C:\> Get-YoutubeDlItem -Template -Name "music","video"
+	PS C:\> Get-YoutubeDlItem -Template -Names "music","video"
 	
 	Gets the youtube-dl template definitions which are named "music" and 
 	"video".
@@ -117,12 +117,12 @@ function Get-YoutubeDlItem
 				$existingObject = $objectList | Where-Object { $_.Name -eq $name }
 				if ($null -eq $existingObject)
 				{
-					Write-Warning "There is no $(if($Template){`"Template`"}else{`"Job`"}) called: '$name'."
+					Write-Warning "There is no $(if($Template){`"template`"}else{`"job`"}) named: '$name'."
 					continue
 				}
 				
 				# Add the object for outputting.
-				$outputList.Add($existingObject)
+				$outputList.Add($existingObject) | Out-Null
 			}
 		}
 		else

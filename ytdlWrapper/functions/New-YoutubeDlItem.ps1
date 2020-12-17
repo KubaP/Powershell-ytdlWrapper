@@ -153,7 +153,8 @@ function New-YoutubeDlItem
 			}
 			
 			# Validate that the configuration file exists and can be used.
-			switch ([YoutubeDlTemplate]::GetState($Path)) {
+			switch ([YoutubeDlTemplate]::GetState($Path))
+			{
 				"InvalidPath"
 				{
 					Write-Error "The configuration file path: '$Path' is invalid."
@@ -220,7 +221,8 @@ function New-YoutubeDlItem
 				}
 			}
 
-			switch ([YoutubeDlJob]::GetState($Path, $initialVariableInputs.Keys)) {
+			switch ([YoutubeDlJob]::GetState($Path, $initialVariableInputs.Keys))
+			{
 				"InvalidPath"
 				{
 					Write-Error "The configuration file path: '$Path' is invalid."
