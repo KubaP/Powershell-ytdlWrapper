@@ -38,18 +38,10 @@ class YoutubeDlTemplate
 		return [TemplateState]::Valid
 	}
 	
-	[hashtable] GetInputs()
+	[System.Collections.Generic.List[string]] GetInputs()
 	{
-		$inputs = New-Object -TypeName hashtable
-		
 		# Get the definitions within the file.
-		$inputDefinitions = Read-ConfigDefinitions -Path $this.Path -InputDefinitions
-		foreach ($definition in $inputDefinitions)
-		{
-			$inputs[$definition] = ""
-		}
-		
-		return $inputs
+		return Read-ConfigDefinitions -Path $this.Path -InputDefinitions
 	}
 	
 	[string] CompleteTemplate([hashtable]$inputs)

@@ -79,25 +79,25 @@ function Invoke-YoutubeDl
 		$templateList = Read-Templates
 		$templateObject = $templateList | Where-Object { $_.Name -eq $name }
 		if ($null -eq $templateObject) { return }
-		if ($templateObject.GetStatus() -eq "InvalidPath") { return }
+		if ($templateObject.GetState() -eq "InvalidPath") { return }
 		
 		# Retrieve all instances of input definitions in the config file.
-		$inputList = $templateObject.GetInputs()
+		$inputNames = $templateObject.GetInputs()
 		
 		# Define the dynamic parameter dictionary to hold new parameters.
 		$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 		# Now that a list of all input definitions is found, create a
 		# dynamic parameter for each one.
-		foreach ($inputName in $inputList.Keys)
+		foreach ($input in $inputNames)
 		{
 			# Set up the necessary objects for a parameter.
 			$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
 			$paramAttribute.Mandatory = $true
 			$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 			$attributeCollection.Add($paramAttribute)				
-			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($inputName, [String], $attributeCollection)
+			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($input, [String], $attributeCollection)
 			
-			$parameterDictionary.Add($inputName, $param)
+			$parameterDictionary.Add($input, $param)
 		}
 		
 		return $parameterDictionary
@@ -110,7 +110,7 @@ function Invoke-YoutubeDl
 			# Validate that the path is valid.
 			if (-not (Test-Path -Path $Path))
 			{
-				Write-Error "The configuration file path: '$Path' points to an invalid/non-existent location!"
+				Write-Error "The configuration file path: '$Path' is invalid!"
 				return
 			}
 			
@@ -140,12 +140,12 @@ function Invoke-YoutubeDl
 			switch ($templateObject.GetState()) {
 				"InvalidPath"
 				{
-					Write-Error "The template: '$name' has an invalid configuration file path: '$($templateObject.Path)'."
+					Write-Error "The template: '$name' has a configuration file path: '$($templateObject.Path)' which is invalid!"
 					return
 				}
 				"NoInputs"
 				{
-					Write-Error "The template: '$name' has a configuration file with no inputs."
+					Write-Error "The template: '$name' has a configuration file with no input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
 				}
 			}
@@ -153,16 +153,17 @@ function Invoke-YoutubeDl
 			# Get the necessary inputs for this template, and assign each the 
 			# user provided value. Quit if the user has failed to give in a 
 			# certain value.
-			$inputs = $templateObject.GetInputs()
-			foreach ($key in $inputs.Keys)
+			$inputNames = $templateObject.GetInputs()
+			$inputs = New-Object -TypeName hashtable
+			foreach ($input in $inputNames)
 			{
-				if ($PSBoundParameters.ContainsKey($key))
+				if ($PSBoundParameters.ContainsKey($input))
 				{
-					$inputs[$key] = $PSBoundParameters[$key]
+					$inputs[$input] = $PSBoundParameters[$input]
 				}
 				else
 				{
-					Write-Error "The template: '$name' needs the input: '$key' which has been not provided!"
+					Write-Error "The template: '$name' requires the input: '$input' which has been not provided!"
 					return
 				}
 			}
@@ -187,74 +188,60 @@ function Invoke-YoutubeDl
 		{
 			foreach ($name in $Names)
 			{
-				# Retrieve the job and check that it exists.
+				# Retrieve the template and check that it exists.
 				$jobList = Read-Jobs
-				$job = $jobList | Where-Object { $_.Name -eq $name }
-				if ($null -eq $job)
+				$jobObject = $jobList | Where-Object { $_.Name -eq $name }
+				if ($null -eq $jobObject)
 				{
-					Write-Error "There is no job called: '$name'"
+					Write-Error "There is no job called: '$name'."
 					return
 				}
 				
-				$configFileContent = Get-Content -Path $job.Path -Raw
-				# Retrieve all variable definitions within the config file.
-				$definitionList = Read-ConfigDefinitions -Path $job.Path -VariableDefinitions
-				
-				# Check that the variables stored in the job object match the
-				# variables defined in the configuration file.
-				$jobDefinitionList = $job.Variables.Keys
-				$differenceA = $jobDefinitionList | Where-Object { $definitionList -notcontains $_ }
-				$differenceB = $definitionList | Where-Object { $jobDefinitionList -notcontains $_ }
-				if (($null -ne $differenceA) -or ($null -ne $differenceB))
-				{
-					Write-Error "The variables defined for this job do not match the variable definitions in the configuration file.`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
-					return
+				# Validate that the job can be used.
+				switch ($jobObject.GetState()) {
+					"InvalidPath"
+					{
+						Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
+						return
+					}
+					"MismatchedVariables"
+					{
+						Write-Error "The job: '$name' has a mismatch between the variables stored in the database and the variable definitions within the configuration file!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+						return
+					}
+					"HasInputs"
+					{
+						Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+						return
+					}
 				}
 				
-				# Go through all variable definitions and substitute the stored
-				# values, before writing the modified content to a temporary config
-				# file.
-				foreach ($definition in $definitionList)
-				{
-					# Replace the occurence of the variable definition with the variable value from the database
-					$configFileContent = $configFileContent -replace "v@{$definition}{start{(?s)(.*?)}end}", $job._Variables[$definition]
-				}
-				
-				# Retrieve all variable scriptblocks within the config file.
-				$scriptblockDefinitionList = Read-ConfigDefinitions -Path $job.Path -VariableScriptblocks
-				
-				# Create a table linking each scriptblock to its respective definition name
-				[hashtable]$scriptblockList = [ordered]@{}	
-				for ($i = 0; $i -lt $definitionList.Count; $i++)
-				{
-					$scriptblockList.Add($definitionList[$i], [scriptblock]::Create($scriptblockDefinitionList[$i]))
-				}
+				$completedJobContent = $jobObject.CompleteJob()
 				
 				# Write modified config file (with substituted variable values) to a
 				# temporary file. This is done because it is easier to use the 
 				# --config-location flag for youtube-dl than to edit the whole
 				# string to use proper escape sequences.
-				$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$configFileContent)
+				$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedJobContent)
 				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFileContent
+				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedJobContent
 				
 				Invoke-Process -Path "$script:Folder\$hash.conf"
 				
 				# Delete the temp config file since its no longer needed.
 				Remove-Item -Path "$script:Folder\$hash.conf" -Force
 				
-				foreach ($key in $scriptblockList)
+				# If a scriptblock didn't return a value, warn the user.
+				$return = $jobObject.ExecuteScriptblocks()
+				if (-not [System.String]::IsNullOrWhiteSpace($return))
 				{
-					$returnResult = Invoke-Command -ScriptBlock $scriptblockList[$key]
-					if ($null -eq $returnResult)
-					{
-						Write-Error "The scriptblock for the '$key' variable definition for the '$name' job didn't return a value. It must return a value!"
-						continue
-					}
-					$job._Variables[$key] = $returnResult
+					Write-Error "The job: '$name' has a scriptblock definition named: '$return' which did not return a value!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					return
 				}
+				
 				# TODO: should process
-				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false | Out-Null
+				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
+					| Out-Null
 			}
 		}
 	}

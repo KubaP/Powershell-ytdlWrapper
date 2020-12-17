@@ -161,7 +161,7 @@ function New-YoutubeDlItem
 				}
 				"NoInputs"
 				{
-					Write-Error "The configuration file located at: '$Path' has no input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
+					Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
 				}
 			}
@@ -193,9 +193,8 @@ function New-YoutubeDlItem
 		}
 		elseif ($Job)
 		{
-			$jobList = Read-Jobs
-			
 			# Validate that the name isn't already taken.
+			$jobList = Read-Jobs
 			$existingJob = $jobList | Where-Object { $_.Name -eq $Name }
 			if ($null -ne $existingJob)
 			{
@@ -203,49 +202,63 @@ function New-YoutubeDlItem
 				return
 			}
 			
-			# Validate that at there are no inputs as this is an automated
-			# job, not a template.
-			if ((Read-ConfigDefinitions -Path $Path -InputDefinitions).Count -ne 0)
+			# Validate that the configuration file exists and can be used.
+			# Validate that each required variable in the configuration file
+			# has been given an initial value.
+			$variableList = Read-ConfigDefinitions -Path $Path -VariableDefinitions
+			$initialVariableInputs = New-Object hashtable
+			foreach ($variable in $variableList)
 			{
-				Write-Error "The configuration file located at: '$Path' has input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper`'."
-				return
-			}
-			
-			# Validate that for each variable definition, an initial value has
-			# been provided as a parameter.
-			$definitionList = Read-ConfigDefinitions -Path $Path -VariableDefinitions
-			$initialVariableValues = New-Object -TypeName hashtable
-			foreach ($definition in $definitionList)
-			{
-				if ($PSBoundParameters.ContainsKey($definition))
+				if ($PSBoundParameters.ContainsKey($variable))
 				{
-					$initialVariableValues[$definition] = $PSBoundParameters[$definition]
+					$initialVariableInputs[$variable] = $PSBoundParameters[$variable]
 				}
 				else
 				{
-					Write-Error "The variable: '$definition' has not been provided with an initial value!"
+					Write-Error "The variable: '$variable' has not been provided an initial value as a parameter!"
+					return
+				}
+			}
+
+			switch ([YoutubeDlJob]::GetState($Path, $initialVariableInputs.Keys)) {
+				"InvalidPath"
+				{
+					Write-Error "The configuration file path: '$Path' is invalid."
+					return
+				}
+				"MismatchedVariables"
+				{
+					Write-Error "There is a mismatch between the variables defined within the configuration file and the variable initial values passed to this cmdlet!`nFor help regarding the configuration file, see the `"#FUCKYOU`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					return
+				}
+				"HasInputs"
+				{
+					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
 					return
 				}
 			}
 			
-			if (-not $DontMoveConfigurationFile -and $PSCmdlet.ShouldProcess("$Path", `
-				"Move configuration file to module appdata folder"))
+			if (-not $DontMoveConfigurationFile -and
+				$PSCmdlet.ShouldProcess("$Path", "Move configuration file to module appdata folder"))
 			{
 				# Move the file over to the module appdata folder, and rename it
 				# to the unique name of the template to avoid any potential
 				# filename collisions.
 				$fileName = Split-Path -Path $Path -Leaf
-				Move-Item -Path $Path -Destination "$script:Folder\Jobs" -Force -WhatIf:$false -Confirm:$false | Out-Null
-				Rename-Item -Path "$script:Folder\Jobs\$fileName" -NewName "$Name.conf" -Force -WhatIf:$false -Confirm:$false | Out-Null
+				Move-Item -Path $Path -Destination "$script:Folder\Jobs" -Force -WhatIf:$false -Confirm:$false `
+					| Out-Null
+				Rename-Item -Path "$script:Folder\Jobs\$fileName" -NewName "$Name.conf" -Force -WhatIf:$false `
+					-Confirm:$false | Out-Null
 				$Path = "$script:Folder\Jobs\$Name.conf"
 			}
 			
 			# Create the object and save it to the database file.
-			$newJob = [YoutubeDlJob]::new($Name, $Path, $initialVariableValues)
+			$newJob = [YoutubeDlJob]::new($Name, $Path, $initialVariableInputs)
 			$jobList.Add($newJob)
 			if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
 			{
-				Export-Clixml -Path $script:JobData -InputObject $templateList -WhatIf:$false -Confirm:$false | Out-Null
+				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
+					| Out-Null
 			}
 			
 			Write-Output $newJob
