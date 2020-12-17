@@ -45,11 +45,6 @@ function Invoke-YoutubeDl
 	param
 	(
 		
-		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config", ValueFromPipelineByPropertyName = $true)]
-		[Alias("Path")]
-		[string[]]
-		$ConfigurationFilePath,
-		
 		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Template")]
 		[switch]
 		$Template,
@@ -58,28 +53,42 @@ function Invoke-YoutubeDl
 		[switch]
 		$Job,
 		
+		[Parameter(Position = 0, Mandatory = $true, ParameterSetName = "Config")]
+		[Alias("ConfigurationFilePath")]
+		[string]
+		$Path,
+		
 		# TODO: Tab completion.
 		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Template", ValueFromPipelineByPropertyName = $true)]
-		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Job", ValueFromPipelineByPropertyName = $true)]
 		[Alias("Name")]
 		[string[]]
-		$Names
+		$Names,
+		
+		# TODO: Tab completion.
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Job")]
+		[string]
+		$Name
 		
 	)
 	
-	dynamicparam {
-		# Only run the input detection logic if a file is given in and
-		# exists, i.e. if invoking youtube-dl against a config file,
-		# Or if using a template.
-		if ($null -ne $Path -and (Test-Path -Path $Path)) {
+	dynamicparam
+	{
+		# Only run the input detection logic if a template is given in and
+		# exists, i.e. if invoking youtube-dl against a templated config
+		# file.
+		if ($null -ne $Template -and (-not [system.string]::IsNullOrWhiteSpace($Name)) -and `
+			($null -ne (Get-YoutubeDlItem -Template -Name $Name)))
+		{
 			# Retrieve all instances of input definitions in the config file.
-			$definitionList = Read-ConfigDefinitions -Path $Path -InputDefinitions
+			$definitionList = Read-ConfigDefinitions -Path (Get-YoutubeDlItem -Template -Name $Name).Path `
+				-InputDefinitions
 			
 			# Define the dynamic parameter dictionary to hold new parameters.
 			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 			# Now that a list of all input definitions is found, create a
 			# dynamic parameter for each one.
-			foreach ($definition in $definitionList) {
+			foreach ($definition in $definitionList)
+			{
 				# Set up the necessary objects for a parameter.
 				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
 				$paramAttribute.Mandatory = $true
@@ -92,33 +101,61 @@ function Invoke-YoutubeDl
 			
 			return $parameterDictionary
 		}
-		elseif ($null -ne $Template) {
-			# TODO: Retrieve the template inputs.
-		}
 	}
 	
-	process {
-		if ($PSCmdlet.ParameterSetName -eq "Config") {
+	process
+	{
+		if ($PSCmdlet.ParameterSetName -eq "Config")
+		{
 			# Validate the config file exists.
-			if (-not (Test-Path -Path $Path)) {
+			if (-not (Test-Path -Path $Path))
+			{
 				Write-Error "The config path: '$Path' points to an invalid/non-existent location!"
 				return
 			}
 			
-			$configFileContent = Get-Content -Path $Path -Raw
+			# Define youtube-dl process information.
+			$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
+				FileName = "youtube-dl"
+				Arguments = "--config-location `"$Path`""
+				UseShellExecute = $false
+			}
+			
+			# Start and wait for youtube-dl to finish.
+			$process = New-Object System.Diagnostics.Process
+			$process.StartInfo = $processStartupInfo
+			$process.Start()
+			$process.WaitForExit()
+			$process.Dispose()
+		}
+		elseif ($PSCmdlet.ParameterSetName -eq "Template")
+		{
+			# Retrieve the template and check that it exists.
+			$templateList = Read-Templates -Path $script:TemplateData
+			$template = $templateList | Where-Object { $_.Name -eq $Name }
+			if ($null -eq $template)
+			{
+				Write-Error "There is no template called: '$Name'"
+				return
+			}
+			
+			$configFileContent = Get-Content -Path $template.Path -Raw
 			# Retrieve all input definitions within the config file.
-			$definitionList = Read-ConfigDefinitions -Path $Path -InputDefinitions
+			$definitionList = Read-ConfigDefinitions -Path $template.Path -InputDefinitions
 			
 			# Go through all input definitions and substitute the user provided
 			# value, before writing the modified content to a temporary config
 			# file.
-			foreach ($definition in $definitionList) {
-				if ($PSBoundParameters.ContainsKey($definition)) {
+			foreach ($definition in $definitionList)
+			{
+				if ($PSBoundParameters.ContainsKey($definition))
+				{
 					# Replace the occurence of the input definition with the
 					# user provided value.
 					$configFileContent = $configFileContent -replace "i@{$definition}", $PSBoundParameters[$definition]
 				}
-				else {
+				else
+				{
 					# There is a input definition which has not been provided a 
 					# value by the user, so error.
 					Write-Error "The following user input: '$definition' was not provided!"
@@ -133,109 +170,109 @@ function Invoke-YoutubeDl
 			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$configFileContent)
 			$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
 			Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFileContent
+			
+			# Define youtube-dl process information.
+			$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
+				FileName = "youtube-dl"
+				Arguments = "--config-location `"$script:Folder\$hash.conf`""
+				UseShellExecute = $false
+			}
+			
+			# Start and wait for youtube-dl to finish.
+			$process = New-Object System.Diagnostics.Process
+			$process.StartInfo = $processStartupInfo
+			$process.Start()
+			$process.WaitForExit()
+			$process.Dispose()
+			
+			# Delete the temp config file since its no longer needed.
+			Remove-Item -Path "$script:Folder\$hash.conf" -Force
 		}
-		elseif ($PSCmdlet.ParameterSetName -eq "Job") {
-			
-			# Retrieve the job and heck that it exists
-			$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
-			$job = $jobList | Where-Object { $_.Name -eq $JobName }
-			
-			if ($null -eq $job) {
-				
-				Write-Message -Message "There is no job called: $JobName" -DisplayWarning
-				return
-				
-			}
-			
-			# Read in the contents of the job config file
-			$configFileContent = Get-Content -Path $job.ConfigPath -Raw
-			
-			# Retrieve all instances of variable definitions in the config file
-			$definitionList = Read-ConfigDefinitions -Path $job.ConfigPath -VariableDefinitions
-			
-			# Check that the job variables match the configuration file definitions, otherwise there would be errors
-			$jobDefinitionList = $job.Variables.Keys
-			$difference1 = $jobDefinitionList | Where-Object { $definitionList -notcontains $_ }
-			$difference2 = $definitionList | Where-Object { $jobDefinitionList -notcontains $_ }
-			if (($null -ne $difference1) -or ($null -ne $difference2)) {
-				
-				Write-Message -Message "The job variables in the database do not match the variable definitions in the configuration file.
-										`rRun Set-YoutubeDLJob with the -Update switch to fix the issue. See docs for help." -DisplayWarning
-				return
-				
-			}
-			
-			foreach ($definition in $definitionList) {
-				
-				# Replace the occurence of the variable definition with the variable value from the database
-				$configFileContent = $configFileContent -replace "v@{$definition}{start{(?s)(.*?)}end}", $job.Variables[$definition]
-				
-			}
-			
-			# Retrieve all instances of variable scriptblocks in the config file
-			$scriptblockDefinitionList = Read-ConfigDefinitions -Path $job.ConfigPath -VariableScriptblocks
-			
-			# Create a table linking each scriptblock to its respective definition name
-			[hashtable]$scriptblockList = [ordered]@{}	
-			for ($i = 0; $i -lt $definitionList.Count; $i++) {
-				
-				$scriptblockList.Add($definitionList[$i], [scriptblock]::Create($scriptblockDefinitionList[$i]))
-				
-			}
-			
-			# Write modified config file (with user inputs) to a temp file
-			# It is easier to read in the config file than edit the existing string to work properly, by surrounding stuff in "" quotes etc
-			Out-File -FilePath "$script:DataPath\temp.conf" -Force -InputObject $configFileContent
-			
-		}
-		
-		# Define youtube-dl process information.
-		$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
-			FileName = "youtube-dl"
-			Arguments = "--config-location `"$script:Folder\$hash.conf`""
-			UseShellExecute = $false
-		}
-		
-		# Start and wait for youtube-dl to finish.
-		$process = New-Object System.Diagnostics.Process
-		$process.StartInfo = $processStartupInfo
-		$process.Start()
-		$process.WaitForExit()
-		$process.Dispose()
-		
-		# Delete the temp config file since its no longer needed
-		Remove-Item -Path "$script:Folder\$hash.conf" -Force
-		
-		# Execute any scriptblocks for variables
-		if ($PSCmdlet.ParameterSetName -eq "Job") {
-			
-			# Run every scriptblock, and store the result back into the databasee
-			foreach ($key in $scriptblockList.Keys) {
-				
-				$returnResult = Invoke-Command -ScriptBlock $scriptblockList[$key]
-				
-				if ($null -eq $returnResult) {
-					
-					Write-Message -Message "The scriptblock for the $key variable definition didn't return a value. It must return a value." -DisplayError
+		elseif ($PSCmdlet.ParameterSetName -eq "Job")
+		{
+			foreach ($name in $Names)
+			{
+				# Retrieve the job and check that it exists.
+				$jobList = Read-Jobs -Path $script:JobData
+				$job = $jobList | Where-Object { $_.Name -eq $name }
+				if ($null -eq $job)
+				{
+					Write-Error "There is no job called: '$name'"
 					return
-					
 				}
 				
-				$job.Variables[$key] = $returnResult
+				$configFileContent = Get-Content -Path $job.Path -Raw
+				# Retrieve all variable definitions within the config file.
+				$definitionList = Read-ConfigDefinitions -Path $job.Path -VariableDefinitions
 				
+				# Check that the variables stored in the job object match the
+				# variables defined in the configuration file.
+				$jobDefinitionList = $job.Variables.Keys
+				$differenceA = $jobDefinitionList | Where-Object { $definitionList -notcontains $_ }
+				$differenceB = $definitionList | Where-Object { $jobDefinitionList -notcontains $_ }
+				if (($null -ne $differenceA) -or ($null -ne $differenceB))
+				{
+					Write-Error "The variables defined for this job do not match the variable definitions in the configuration file.`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+					return
+				}
+				
+				# Go through all variable definitions and substitute the stored
+				# values, before writing the modified content to a temporary config
+				# file.
+				foreach ($definition in $definitionList)
+				{
+					# Replace the occurence of the variable definition with the variable value from the database
+					$configFileContent = $configFileContent -replace "v@{$definition}{start{(?s)(.*?)}end}", $job._Variables[$definition]
+				}
+				
+				# Retrieve all variable scriptblocks within the config file.
+				$scriptblockDefinitionList = Read-ConfigDefinitions -Path $job.Path -VariableScriptblocks
+				
+				# Create a table linking each scriptblock to its respective definition name
+				[hashtable]$scriptblockList = [ordered]@{}	
+				for ($i = 0; $i -lt $definitionList.Count; $i++)
+				{
+					$scriptblockList.Add($definitionList[$i], [scriptblock]::Create($scriptblockDefinitionList[$i]))
+				}
+				
+				# Write modified config file (with substituted variable values) to a
+				# temporary file. This is done because it is easier to use the 
+				# --config-location flag for youtube-dl than to edit the whole
+				# string to use proper escape sequences.
+				$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$configFileContent)
+				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
+				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFileContent
+				
+				# Define youtube-dl process information.
+				$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
+					FileName = "youtube-dl"
+					Arguments = "--config-location `"$script:Folder\$hash.conf`""
+					UseShellExecute = $false
+				}
+				
+				# Start and wait for youtube-dl to finish.
+				$process = New-Object System.Diagnostics.Process
+				$process.StartInfo = $processStartupInfo
+				$process.Start()
+				$process.WaitForExit()
+				$process.Dispose()
+				
+				# Delete the temp config file since its no longer needed.
+				Remove-Item -Path "$script:Folder\$hash.conf" -Force
+				
+				foreach ($key in $scriptblockList)
+				{
+					$returnResult = Invoke-Command -ScriptBlock $scriptblockList[$key]
+					if ($null -eq $returnResult)
+					{
+						Write-Error "The scriptblock for the '$key' variable definition for the '$name' job didn't return a value. It must return a value!"
+						continue
+					}
+					$job._Variables[$key] = $returnResult
+				}
+				
+				Export-PSFClixml -Path $script:JobData -InputObject $jobList | Out-Null
 			}
-			
-			# If the job has a scriptblock, run it
-			if ($null -ne $job.Scriptblock) {
-				
-				Invoke-Command -ScriptBlock $job.Scriptblock -ArgumentList $job
-				
-			}
-			
-			# Save the modified job (if any scriptblocks ran) to the database file
-			Export-Clixml -Path "$script:DataPath\database.xml" -InputObject $jobList | Out-Null
-			
 		}
 	}
-	
 }
