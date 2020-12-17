@@ -5,6 +5,7 @@
 	MismatchedVariables
 	HasInputs
 }
+# TODO: UninitialiseVariables
 
 class YoutubeDlJob
 {
@@ -62,6 +63,18 @@ class YoutubeDlJob
 	{
 		# Get the definitions within the file.
 		return Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
+	}
+	
+	[System.Collections.Generic.List[string]] GetStoredVariables()
+	{
+		# Get the variable names defined in this object.
+		$returnList = New-Object -TypeName System.Collections.Generic.List[string]
+		foreach ($key in $this._Variables.Keys)
+		{
+			$returnList.Add($key)
+		}
+		
+		return $returnList
 	}
 	
 	[string] CompleteJob()

@@ -1,7 +1,7 @@
 ﻿function Set-YoutubeDlItem
 {
 	
-	[CmdletBinding()]
+	[CmdletBinding(SupportsShouldProcess = $true)]
 	param
 	(
 		
@@ -26,6 +26,7 @@
 		$Path,
 		
 		[Parameter(Position = 2, Mandatory = $true, ParameterSetName = "Job-Update")]
+		[switch]
 		$Update,
 		
 		# TODO: Tab completion.
@@ -44,51 +45,37 @@
 		# exists, and it has a valid configuration file path, and the '-Update'
 		# switch is on.
 		if (-not $Job) { return }
-		if ($null -eq $Names) { return }
+		if ($null -eq $Name) { return }
 		$jobList = Read-Jobs
-		$jobObject = $jobList | Where-Object { $_.Name -eq $name }
+		$jobObject = $jobList | Where-Object { $_.Name -eq $Name }
 		if ($null -eq $jobObject) { return }
 		if ($jobObject.GetState() -eq "InvalidPath") { return }
 		if (-not $Update) { return }
 		
+		# Figure out which are the new variables in the configuration file
+		# to add parameters for.
+		$jobVariables = $jobObject.GetStoredVariables()
+		$configVariables = $jobObject.GetVariables()
+		$newVariables = $configVariables | Where-Object { $jobVariables -notcontains $_ }
 		
+		#Define the dynamic parameter dictionary to add all new parameters to
+		$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 		
-		# Read in the list of job objects and try to get the job
-		$jobList = Get-Jobs -Path "$script:DataPath\database.xml"
-		$job = $jobList | Where-Object { $_.Name -eq $JobName }
-		
-		# Only run if a valid job name has been given and the -Update switch is on
-		if (($null -ne $job) -and ($Update -eq $true)) {
+		# Now that a list of all new variable definitions is found, create a dynamic parameter for each
+		foreach ($variable in $newVariables)
+		{
+			$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
+			$paramAttribute.Mandatory = $true
+			$paramAttribute.ParameterSetName = "Job-Update"
 			
-			# Get a list of definitions stored in the job in the config file
-			$jobDefinitions = $job.Variables.Keys
-			$configDefinitions = Read-ConfigDefinitions -Path $job.ConfigPath -VariableDefinitions
+			$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+			$attributeCollection.Add($paramAttribute)				
+			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($variable, [String], $attributeCollection)
 			
-			# Find a list of variables which need to be added
-			$variablesToAdd = $configDefinitions | Where-Object { $jobDefinitions -notcontains $_ }
-			
-			#Define the dynamic parameter dictionary to add all new parameters to
-			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-			
-			# Now that a list of all new variable definitions is found, create a dynamic parameter for each
-			foreach ($variable in $variablesToAdd) {
-				
-				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
-				$paramAttribute.Mandatory = $true
-				$paramAttribute.ParameterSetName = "Update"
-				
-				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-				$attributeCollection.Add($paramAttribute)				
-				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($variable, [String], $attributeCollection)
-				
-				$parameterDictionary.Add($variable, $param)
-				
-			}
-			
-			return $parameterDictionary
-			
+			$parameterDictionary.Add($variable, $param)
 		}
 		
+		return $parameterDictionary
 	}
 	
 	process
@@ -100,7 +87,7 @@
 			$templateObject = $templateList | Where-Object { $_.Name -eq $Name }
 			if ($null -eq $templateObject)
 			{
-				Write-Error "There is no template named: '$name'."
+				Write-Error "There is no template named: '$Name'."
 				return
 			}
 			
@@ -120,16 +107,78 @@
 			
 			$templateObject.Path = $Path
 			
-			Export-Clixml -Path $script:TemplateData -InputObject $templateList -WhatIf:$false -Confirm:$false `
-				| Out-Null
+			if ($PSCmdlet.ShouldProcess("$script:TemplateData", "Overwrite database with modified contents"))
+			{
+				Export-Clixml -Path $script:TemplateData -InputObject $templateList -WhatIf:$false -Confirm:$false `
+					| Out-Null
+			}
 		}
 		elseif ($Job -and -not $Update)
 		{
-			
+			# TODO
 		}
 		elseif ($Job -and $Update)
 		{
+			# If the job doesn't exist, warn the user.
+			$jobList = Read-Jobs
+			$jobObject = $jobList | Where-Object { $_.Name -eq $Name }
+			if ($null -eq $jobObject)
+			{
+				Write-Error "There is no job named: '$Name'."
+				return
+			}
 			
+			# Validate that the job can be used.
+			switch ($jobObject.GetState())
+			{
+				"InvalidPath"
+				{
+					Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
+					return
+				}
+				"HasInputs"
+				{
+					Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					return
+				}
+			}
+			
+			# Figure out which are the new variables in the configuration file
+			# and which variables in the job (may) need to be removed.
+			$jobVariables = $jobObject.GetStoredVariables()
+			$configVariables = $jobObject.GetVariables()
+			$newVariables = $configVariables | Where-Object { $jobVariables -notcontains $_ }
+			$oldVariables = $jobVariables | Where-Object { $configVariables -notcontains $_ }
+			
+			$variableList = $jobObject._Variables
+			# First remove all of the not-needed-anymore variables from the
+			# hashtable.
+			foreach ($key in $oldVariables)
+			{
+				$variableList.Remove($key)
+			}
+			# Then add all of the new variables which need an initial value
+			# before the job can be ran.
+			foreach ($key in $newVariables)
+			{
+				if ($PSBoundParameters.ContainsKey($key))
+				{
+					$variableList[$key] = $PSBoundParameters[$key]
+				}
+				else
+				{
+					Write-Error "The new variable: '$key' has not been provided an initial value as a parameter!"
+					return
+				}
+			}
+			
+			# Set the modified variable hashtable.
+			$jobObject._Variables = $variableList
+			if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
+			{
+				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
+					| Out-Null
+			}
 		}
 	}
 }
