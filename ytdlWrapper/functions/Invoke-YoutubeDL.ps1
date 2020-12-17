@@ -38,7 +38,6 @@
 #>
 function Invoke-YoutubeDl
 {
-	# TODO: Support multiple jobs/templates.
 	# TODO: Implement SupportsShouldProcess.
 	
 	[CmdletBinding()]
@@ -59,133 +58,129 @@ function Invoke-YoutubeDl
 		$Path,
 		
 		# TODO: Tab completion.
-		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Template", ValueFromPipelineByPropertyName = $true)]
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Template")]
+		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Job", ValueFromPipelineByPropertyName = $true)]
 		[Alias("Name")]
 		[string[]]
-		$Names,
-		
-		# TODO: Tab completion.
-		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Job")]
-		[string]
-		$Name
+		$Names
 		
 	)
 	
 	dynamicparam
 	{
-		# Only run the input detection logic if a template is given in and
-		# exists, i.e. if invoking youtube-dl against a templated config
-		# file.
-		if ($null -ne $Template -and (-not [system.string]::IsNullOrWhiteSpace($Name)) -and `
-			($null -ne (Get-YoutubeDlItem -Template -Name $Name)))
+		# Only run the input detection logic if a template is given, and only
+		# one template is given, and the template exists, and the template
+		# has a valid file path.
+		if (-not $Template) { return }
+		if ($null -eq $Names) { return }
+		$name = $Names[0]
+		if ([system.string]::IsNullOrWhiteSpace($name)) { return }
+		
+		$templateList = Read-Templates
+		$templateObject = $templateList | Where-Object { $_.Name -eq $name }
+		if ($null -eq $templateObject) { return }
+		if ($templateObject.GetStatus() -eq "InvalidPath") { return }
+		
+		# Retrieve all instances of input definitions in the config file.
+		$inputList = $templateObject.GetInputs()
+		
+		# Define the dynamic parameter dictionary to hold new parameters.
+		$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+		# Now that a list of all input definitions is found, create a
+		# dynamic parameter for each one.
+		foreach ($inputName in $inputList.Keys)
 		{
-			# Retrieve all instances of input definitions in the config file.
-			$definitionList = Read-ConfigDefinitions -Path (Get-YoutubeDlItem -Template -Name $Name).Path `
-				-InputDefinitions
+			# Set up the necessary objects for a parameter.
+			$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
+			$paramAttribute.Mandatory = $true
+			$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+			$attributeCollection.Add($paramAttribute)				
+			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($inputName, [String], $attributeCollection)
 			
-			# Define the dynamic parameter dictionary to hold new parameters.
-			$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-			# Now that a list of all input definitions is found, create a
-			# dynamic parameter for each one.
-			foreach ($definition in $definitionList)
-			{
-				# Set up the necessary objects for a parameter.
-				$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
-				$paramAttribute.Mandatory = $true
-				$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-				$attributeCollection.Add($paramAttribute)				
-				$param = New-Object System.Management.Automation.RuntimeDefinedParameter($definition, [String], $attributeCollection)
-				
-				$parameterDictionary.Add($definition, $param)
-			}
-			
-			return $parameterDictionary
+			$parameterDictionary.Add($inputName, $param)
 		}
+		
+		return $parameterDictionary
 	}
 	
 	process
 	{
 		if ($PSCmdlet.ParameterSetName -eq "Config")
 		{
-			# Validate the config file exists.
+			# Validate that the path is valid.
 			if (-not (Test-Path -Path $Path))
 			{
-				Write-Error "The config path: '$Path' points to an invalid/non-existent location!"
+				Write-Error "The configuration file path: '$Path' points to an invalid/non-existent location!"
 				return
 			}
 			
-			# Define youtube-dl process information.
-			$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
-				FileName = "youtube-dl"
-				Arguments = "--config-location `"$Path`""
-				UseShellExecute = $false
-			}
-			
-			# Start and wait for youtube-dl to finish.
-			$process = New-Object System.Diagnostics.Process
-			$process.StartInfo = $processStartupInfo
-			$process.Start()
-			$process.WaitForExit()
-			$process.Dispose()
+			Invoke-Process -Path $Path
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq "Template")
 		{
-			# Retrieve the template and check that it exists.
-			$templateList = Read-Templates -Path $script:TemplateData
-			$template = $templateList | Where-Object { $_.Name -eq $Name }
-			if ($null -eq $template)
+			# Only accept one template at a time.
+			if ($Names.Length -gt 1)
 			{
-				Write-Error "There is no template called: '$Name'"
+				Write-Error "Cannot specify more than one template per invocation of this cmdlet!"
 				return
 			}
 			
-			$configFileContent = Get-Content -Path $template.Path -Raw
-			# Retrieve all input definitions within the config file.
-			$definitionList = Read-ConfigDefinitions -Path $template.Path -InputDefinitions
+			$name = $Names[0]
 			
-			# Go through all input definitions and substitute the user provided
-			# value, before writing the modified content to a temporary config
-			# file.
-			foreach ($definition in $definitionList)
+			# Retrieve the template and check that it exists.
+			$templateList = Read-Templates
+			$templateObject = $templateList | Where-Object { $_.Name -eq $name }
+			if ($null -eq $templateObject)
 			{
-				if ($PSBoundParameters.ContainsKey($definition))
+				Write-Error "There is no template called: '$name'."
+				return
+			}
+			
+			# Validate that the template can be used.
+			switch ($templateObject.GetState()) {
+				"InvalidPath"
 				{
-					# Replace the occurence of the input definition with the
-					# user provided value.
-					$configFileContent = $configFileContent -replace "i@{$definition}", $PSBoundParameters[$definition]
+					Write-Error "The template: '$name' has an invalid configuration file path: '$($templateObject.Path)'."
+					return
 				}
-				else
+				"NoInputs"
 				{
-					# There is a input definition which has not been provided a 
-					# value by the user, so error.
-					Write-Error "The following user input: '$definition' was not provided!"
+					Write-Error "The template: '$name' has a configuration file with no inputs."
 					return
 				}
 			}
+			
+			# Get the necessary inputs for this template, and assign each the 
+			# user provided value. Quit if the user has failed to give in a 
+			# certain value.
+			$inputs = $templateObject.GetInputs()
+			foreach ($key in $inputs.Keys)
+			{
+				if ($PSBoundParameters.ContainsKey($key))
+				{
+					$inputs[$key] = $PSBoundParameters[$key]
+				}
+				else
+				{
+					Write-Error "The template: '$name' needs the input: '$key' which has been not provided!"
+					return
+				}
+			}
+			
+			$completedTemplateContent = $templateObject.CompleteTemplate($inputs)
 			
 			# Write modified config file (with substituted user inputs) to a
 			# temporary file. This is done because it is easier to use the 
 			# --config-location flag for youtube-dl than to edit the whole
 			# string to use proper escape sequences.
-			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$configFileContent)
+			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedTemplateContent)
 			$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-			Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFileContent
+			Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedTemplateContent `
+				-ErrorAction Stop
 			
-			# Define youtube-dl process information.
-			$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
-				FileName = "youtube-dl"
-				Arguments = "--config-location `"$script:Folder\$hash.conf`""
-				UseShellExecute = $false
-			}
+			Invoke-Process -Path "$script:Folder\$hash.conf"
 			
-			# Start and wait for youtube-dl to finish.
-			$process = New-Object System.Diagnostics.Process
-			$process.StartInfo = $processStartupInfo
-			$process.Start()
-			$process.WaitForExit()
-			$process.Dispose()
-			
-			# Delete the temp config file since its no longer needed.
+			# Clean up the temporary file.
 			Remove-Item -Path "$script:Folder\$hash.conf" -Force
 		}
 		elseif ($PSCmdlet.ParameterSetName -eq "Job")
@@ -193,7 +188,7 @@ function Invoke-YoutubeDl
 			foreach ($name in $Names)
 			{
 				# Retrieve the job and check that it exists.
-				$jobList = Read-Jobs -Path $script:JobData
+				$jobList = Read-Jobs
 				$job = $jobList | Where-Object { $_.Name -eq $name }
 				if ($null -eq $job)
 				{
@@ -243,19 +238,7 @@ function Invoke-YoutubeDl
 				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
 				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFileContent
 				
-				# Define youtube-dl process information.
-				$processStartupInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{
-					FileName = "youtube-dl"
-					Arguments = "--config-location `"$script:Folder\$hash.conf`""
-					UseShellExecute = $false
-				}
-				
-				# Start and wait for youtube-dl to finish.
-				$process = New-Object System.Diagnostics.Process
-				$process.StartInfo = $processStartupInfo
-				$process.Start()
-				$process.WaitForExit()
-				$process.Dispose()
+				Invoke-Process -Path "$script:Folder\$hash.conf"
 				
 				# Delete the temp config file since its no longer needed.
 				Remove-Item -Path "$script:Folder\$hash.conf" -Force
@@ -270,8 +253,8 @@ function Invoke-YoutubeDl
 					}
 					$job._Variables[$key] = $returnResult
 				}
-				
-				Export-PSFClixml -Path $script:JobData -InputObject $jobList | Out-Null
+				# TODO: should process
+				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false | Out-Null
 			}
 		}
 	}

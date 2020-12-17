@@ -1,4 +1,10 @@
-﻿class YoutubeDlTemplate
+﻿enum TemplateState {
+	Valid
+	InvalidPath
+	NoInputs
+}
+
+class YoutubeDlTemplate
 {
 	[string]$Name
 	[string]$Path
@@ -10,19 +16,37 @@
 		$this.Path = $path
 	}
 	
+	[TemplateState] GetState() {
+		return [YoutubeDlTemplate]::GetState($this.Path)
+	}
+	
+	static [TemplateState] GetState([string]$path) {
+		
+		# Check for an invalid path.
+		if (-not (Test-Path -Path $path))
+		{
+			return [TemplateState]::InvalidPath
+		}
+		
+		# Check that the template has at least one input.
+		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -eq 0)
+		{
+			return [TemplateState]::NoInputs
+		}
+		
+		# After these checks, this template should be valid.
+		return [TemplateState]::Valid
+	}
+	
 	[hashtable] GetInputs()
 	{
 		$inputs = New-Object -TypeName hashtable
 		
-		# If the config filepath is valid, get the definitions within the file.
-		if (Test-Path -Path $this.Path)
+		# Get the definitions within the file.
+		$inputDefinitions = Read-ConfigDefinitions -Path $this.Path -InputDefinitions
+		foreach ($definition in $inputDefinitions)
 		{
-			$inputDefinitions = Read-ConfigDefinitions -Path $this.Path -InputDefinitions
-			
-			foreach ($definition in $inputDefinitions)
-			{
-				$inputs[$definition] = ""
-			}
+			$inputs[$definition] = ""
 		}
 		
 		return $inputs
@@ -30,32 +54,15 @@
 	
 	[string] CompleteTemplate([hashtable]$inputs)
 	{
-		# If the config filepath is invalid, return nothing.
-		if (-not (Test-Path -Path $this.Path))
-		{
-			return $null
-		}
-		
+		# Go through all input definitions and substitute the user provided
+		# value, before returning the modified file content string.
 		$configFilestream = Get-Content -Path $this.Path -Raw
-		$inputDefinitions = Read-ConfigDefinitions -Path $this.Path -InputDefinitions
-		foreach ($definition in $inputDefinitions)
+		foreach ($key in $inputs.Keys)
 		{
-			if ($inputs.ContainsKey($definition))
-			{
-				
-				$configFilestream = $configFilestream -replace "i@{$definition}", $inputs[$definition]
-				
-			}
-			else
-			{
-				return $null
-			}
+			$configFilestream = $configFilestream -replace "i@{$key}", $inputs[$key]
 		}
 		
-		$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$configFilestream)
-		$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-		Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $configFilestream
-		return $hash
+		return $configFilestream
 	}
 	
 }

@@ -141,35 +141,33 @@ function New-YoutubeDlItem
 	
 	process
 	{
-		# Validate the config file exists.
-		if (-not (Test-Path -Path $Path))
-		{
-			Write-Error "The configuration file path: '$Path' points to an invalid/non-existent location!"
-			return
-		}
-		
 		if ($Template)
 		{
-			$templateList = Read-Templates
-			
 			# Validate that the name isn't already taken.
+			$templateList = Read-Templates
 			$existingTemplate = $templateList | Where-Object { $_.Name -eq $Name }
 			if ($null -ne $existingTemplate)
 			{
-				Write-Error "The name: '$Name' is already taken!"
+				Write-Error "The name: '$Name' is already taken for a template."
 				return
 			}
 			
-			# Validate that at least one input is present for this template
-			# to make sense.
-			if ((Read-ConfigDefinitions -Path $Path -InputDefinitions).Count -eq 0)
-			{
-				Write-Error "The configuration file located at: '$Path' does not have a single input definition!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper`'."
-				return
+			# Validate that the configuration file exists and can be used.
+			switch ([YoutubeDlTemplate]::GetState($Path)) {
+				"InvalidPath"
+				{
+					Write-Error "The configuration file path: '$Path' is invalid."
+					return
+				}
+				"NoInputs"
+				{
+					Write-Error "The configuration file located at: '$Path' has no input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
+					return
+				}
 			}
 			
-			if (-not $DontMoveConfigurationFile -and $PSCmdlet.ShouldProcess("$Path", `
-				"Move configuration file to module appdata folder"))
+			if (-not $DontMoveConfigurationFile -and
+				$PSCmdlet.ShouldProcess("$Path", "Move configuration file to module appdata folder"))
 			{
 				# Move the file over to the module appdata folder, and rename it
 				# to the unique name of the template to avoid any potential
@@ -187,7 +185,8 @@ function New-YoutubeDlItem
 			$templateList.Add($newTemplate)
 			if ($PSCmdlet.ShouldProcess("$script:TemplateData", "Overwrite database with modified contents"))
 			{
-				Export-Clixml -Path $script:TemplateData -InputObject $templateList -WhatIf:$false -Confirm:$false | Out-Null
+				Export-Clixml -Path $script:TemplateData -InputObject $templateList -WhatIf:$false -Confirm:$false `
+					| Out-Null
 			}
 			
 			Write-Output $newTemplate
@@ -200,7 +199,7 @@ function New-YoutubeDlItem
 			$existingJob = $jobList | Where-Object { $_.Name -eq $Name }
 			if ($null -ne $existingJob)
 			{
-				Write-Error "The name: '$Name' is already taken!"
+				Write-Error "The name: '$Name' is already taken for a job."
 				return
 			}
 			
