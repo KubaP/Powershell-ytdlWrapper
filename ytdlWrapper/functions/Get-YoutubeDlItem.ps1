@@ -1,32 +1,25 @@
 ﻿<#
 .SYNOPSIS
-	Gets the specified youtube-dl item.
+	Gets the specified youtube-dl item(s).
 	
 .DESCRIPTION
-	The `Get-Item` cmdlet gets one or more youtube-dl template or job
-	definitions specified by their name(s).
+	The `Get-Item` cmdlet gets one or more youtube-dl templates or jobs,
+	specified by their name(s).
 	
 .PARAMETER Template
-	Indicates that this cmdlet will be retrieving a youtube-dl template.
+	Indicates that this cmdlet will be retrieving youtube-dl template(s).
 	
 .PARAMETER Job
-	Indicates that this cmdlet will be retrieving a youtube-dl job.
+	Indicates that this cmdlet will be retrieving youtube-dl job(s).
 	
 .PARAMETER Names
 	Specifies the name(s) of the items to get.
 	
-	Once you specify the '-Template/Job' option, this parameter will
-	autocomplete to valid existing names for the respective item type.
+	Once you specify the '-Template'/'-Job' switch, this parameter will
+	autocomplete to valid names for the respective item type.
 	
 .PARAMETER All
 	Specifies to get all items of the respective item type.
-	
-.PARAMETER WhatIf
-	Shows what would happen if the cmdlet runs. The cmdlet does not run.
-	
-.PARAMETER Confirm
-	Prompts you for confirmation before running any state-altering actions
-	in this cmdlet.
 	
 .INPUTS
 	System.String[]
@@ -38,22 +31,37 @@
 	YoutubeDlJob
 	
 .NOTES
-	This cmdlet is aliased by default to '#TODO'.
+	This cmdlet is aliased by default to 'gydl'.
 	
 .EXAMPLE
 	PS C:\> Get-YoutubeDlItem -Template -Names "music","video"
 	
 	Gets the youtube-dl template definitions which are named "music" and 
-	"video".
+	"video", and pipes them out to the screen, by default formatted in a list.
 	
 .EXAMPLE
 	PS C:\> Get-YoutubeDlItem -Job -All
 	
-	Gets all youtube-dl job definitions.
+	Gets all youtube-dl job definitions, and pipes them out to the screen,
+	by default formatted in a list.
+	
+.EXAMPLE
+	PS C:\> Get-YoutubeDlItem -Job "music" | Invoke-YoutubeDl -Job
+	
+	Gets the youtube-dl job named "music", and then invokes youtube-dl to
+	run it automatically.
+	
+.LINK
+	New-YoutubeDlItem
+	Set-YoutubeDlItem
+	Remove-YoutubeDlItem
+	Invoke-YoutubeDl
+	about_ytdlWrapper
 	
 #>
 function Get-YoutubeDlItem
 {
+	[Alias("gydl")]
 	
 	[CmdletBinding()]
 	param

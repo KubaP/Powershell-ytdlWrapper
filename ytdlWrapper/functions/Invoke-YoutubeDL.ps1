@@ -1,44 +1,84 @@
 <#
 .SYNOPSIS
-	Invoke youtube-dl
+	Runs youtube-dl.
 	
 .DESCRIPTION
-	Invoke the youtube-dl process, specifying either an already defined job or
-	a configuration file.
+	The `Invoke-YoutubeDl` cmdlet runs youtube-dl.exe using the specified
+	method.
+	
+	This cmdlet can be used to run youtube-dl, giving it a fully completed
+	configuration file which matches the youtube-dl config specification.
+	
+	This cmdlet can be used to run a youtube-dl template, giving it the
+	required input parameters.
+	
+	This cmdlet can be used to run a youtube-dl job, which happens without
+	user input.
 	
 .PARAMETER Path
-	The location of a youtube-dl configuration file to use.
+	Specifies the path of the location of the configuration file to use.
 	
 .PARAMETER Template
-	The name of a template to use.
+	Indicates that this cmdlet will be running a youtube-dl template.
 	
-.PARAMETER JobName
-	The name of the job to run.
+.PARAMETER Job
+	Indicates that this cmdlet will be running a youtube-dl job.
+	
+.PARAMETER Names
+	Specifies the name(s) of the items to get.
+	
+	Once you specify the '-Template'/'-Job' switch, this parameter will
+	autocomplete to valid names for the respective item type.
+	
+	If specifying the '-Template' switch, you can only pass in one name.
+	
+	If specifying the '-Job' switch, you can pass in multiple names.
 	
 .EXAMPLE
-	PS C:\> Invoke-YoutubeDl -Path ~\template.conf -Url "https:\some\url"
+	PS C:\> Invoke-YoutubeDl -Path ~\download.conf
 	
-	Invokes youtube-dl using the specified configuration path, with has an
-	input definition "Url" that is passed in as a parameter.
+	Runs youtube-dl, giving it the "download.conf" configuration file to parse.
+	The configuration file must fully align to the youtube-dl config
+	specification.
 	
 .EXAMPLE
-	PS C:\> Invoke-YoutubeDl -JobName "test"
+	Assuming the template 'music' has the input named "Url".
 	
-	Invokes youtube-dl using the configuration path specified by the job, and
-	any variables which may be defined for this job.
+	PS C:\> Invoke-YoutubeDl -Template -Name "music" -Url "https:\\some\url"
+	
+	Runs the "music" template, which takes in the '-Url' parameter to complete
+	the configuration file, before giving it to youtube-dl.
+	
+.EXAMPLE
+	PS C:\> Invoke-YoutubeDl -Job -Name "archive"
+	
+	Runs the "archive" job, which uses the stored variables to complete the
+	configuration file and pass it to youtube-dl. Afterwards, the scriptblocks
+	responsible for each variable run to generate the new variable values to 
+	be used for the next run.
 	
 .INPUTS
-	None
+	System.String[]
+		You can pipe one or more strings containing the names of the items
+		to run.
 	
 .OUTPUTS
 	None
 	
 .NOTES
+	This cmdlet is aliased by default to 'iydl'.
+	
+.LINK
+	New-YoutubeDlItem
+	Get-YoutubeDlItem
+	Set-YoutubeDlItem
+	Remove-YoutubeDlItem
+	about_ytdlWrapper
 	
 #>
 function Invoke-YoutubeDl
 {
-	# TODO: Implement SupportsShouldProcess.
+	[Alias("iydl")]
 	
 	[CmdletBinding(SupportsShouldProcess = $true)]
 	param
@@ -113,7 +153,7 @@ function Invoke-YoutubeDl
 				return
 			}
 			
-			if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
+			if ($PSCmdlet.ShouldProcess("Starting youtube-dl.exe.", "Are you sure you want to start youtube-dl.exe?", "Start Process Prompt"))
 			{
 				Invoke-Process -Path "$script:Folder\$hash.conf"
 			}
@@ -132,6 +172,7 @@ function Invoke-YoutubeDl
 			# Retrieve the template and check that it exists.
 			$templateList = Read-Templates
 			$templateObject = $templateList | Where-Object { $_.Name -eq $name }
+			Write-Verbose "Validating parameters and the configuration file."
 			if ($null -eq $templateObject)
 			{
 				Write-Error "There is no template named: '$name'."
@@ -179,18 +220,19 @@ function Invoke-YoutubeDl
 			# string to use proper escape sequences.
 			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedTemplateContent)
 			$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-			if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Create temporary configuration file"))
+			if ($PSCmdlet.ShouldProcess("Creating temporary configuration file at: '$script:Folder\$hash.conf'.", "Are you sure you want to create a temporary configuration file at: '$script:Folder\$hash.conf'?", "Create File Prompt"))
 			{
 				Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedTemplateContent `
 					-ErrorAction Stop
 			}
-			if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
+			
+			if ($PSCmdlet.ShouldProcess("Starting youtube-dl.exe.", "Are you sure you want to start youtube-dl.exe?", "Start Process Prompt"))
 			{
 				Invoke-Process -Path "$script:Folder\$hash.conf"
 			}
 			
 			# Clean up the temporary file.
-			if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Delete temporary configuration file"))
+			if ($PSCmdlet.ShouldProcess("Clean-up temporary configuration file from: '$script:Folder\$hash.conf'.", "Are you sure you want to clean-up the temporary configuration file from: '$script:Folder\$hash.conf'?", "Delete File Prompt"))
 			{
 				Remove-Item -Path "$script:Folder\$hash.conf" -Force
 			}
@@ -202,6 +244,7 @@ function Invoke-YoutubeDl
 				# Retrieve the template and check that it exists.
 				$jobList = Read-Jobs
 				$jobObject = $jobList | Where-Object { $_.Name -eq $name }
+				Write-Verbose "Validating parameters and the configuration file."
 				if ($null -eq $jobObject)
 				{
 					Write-Error "There is no job named: '$name'."
@@ -241,23 +284,25 @@ function Invoke-YoutubeDl
 				# string to use proper escape sequences.
 				$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedJobContent)
 				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
-				if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Create temporary configuration file"))
+				if ($PSCmdlet.ShouldProcess("Creating temporary configuration file at: '$script:Folder\$hash.conf'.", "Are you sure you want to create a temporary configuration file at: '$script:Folder\$hash.conf'?", "Create File Prompt"))
 				{
 					Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedJobContent `
 						-ErrorAction Stop
 				}
-				if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
+				
+				if ($PSCmdlet.ShouldProcess("Starting youtube-dl.exe.", "Are you sure you want to start youtube-dl.exe?", "Start Process Prompt"))
 				{
 					Invoke-Process -Path "$script:Folder\$hash.conf"
 				}
 				
 				# Clean up the temporary file.
-				if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Delete temporary configuration file"))
+				if ($PSCmdlet.ShouldProcess("Clean-up temporary configuration file from: '$script:Folder\$hash.conf'.", "Are you sure you want to clean-up the temporary configuration file from: '$script:Folder\$hash.conf'?", "Delete File Prompt"))
 				{
 					Remove-Item -Path "$script:Folder\$hash.conf" -Force
 				}
 				
 				# If a scriptblock didn't return a value, warn the user.
+				Write-Verbose "Updating variable values for the job."
 				$return = $jobObject.ExecuteScriptblocks()
 				if (-not [System.String]::IsNullOrWhiteSpace($return))
 				{
@@ -265,7 +310,7 @@ function Invoke-YoutubeDl
 					return
 				}
 				
-				if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
+				if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
 				{
 					Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
 						| Out-Null

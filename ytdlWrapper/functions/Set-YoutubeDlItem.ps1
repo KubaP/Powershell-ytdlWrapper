@@ -1,5 +1,109 @@
-﻿function Set-YoutubeDlItem
+﻿<#
+.SYNOPSIS
+	Changes a value of a youtube-dl item.
+	
+.DESCRIPTION
+	The `Set-YoutubeDlItem` cmdlet changes the value of a  youtube-dl template
+	or job.
+	
+	This cmdlet can be used to change a template's/job's path of the location
+	of the configuration file to use.
+	
+	This cmdlet can be used to change a value of a variable of a job.
+	
+	This cmdlet can be used to update a job if the configuration file changes,
+	initialising any new variables which have been added since the last time, 
+	and removing any now-unnecessary variables.
+	
+.PARAMETER Template
+	Indicates that this cmdlet will be changing a youtube-dl template.
+	
+.PARAMETER Job
+	Indicates that this cmdlet will be changing a youtube-dl job.
+	
+.PARAMETER Name
+	Specifies the name of the item to be changed.
+	
+	Once you specify the '-Template'/'-Job' switch, this parameter will
+	autocomplete to valid names for the respective item type.
+	
+.PARAMETER Path
+	Specifies the new path of the location of the configuration file to use.
+	
+.PARAMETER Variable
+	Specifies the name of the variable to change the value of for a job.
+	
+.PARAMETER Value
+	Specifies the new value of the variable being changed.
+	
+.PARAMETER Update
+	Updates the variables of a job to match with what the defined configuration
+	file has defined.
+	
+.PARAMETER WhatIf
+	Shows what would happen if the cmdlet runs. The cmdlet does not run.
+	
+.PARAMETER Confirm
+	Prompts you for confirmation before running any state-altering actions
+	in this cmdlet.
+	
+.INPUTS
+	System.String
+		You can pipe the name of the item to change.
+	
+.OUTPUTS
+	YoutubeDlTemplate
+	YoutubeDlJob
+	
+.NOTES
+	This cmdlet is aliased by default to 'sydl'.
+	
+.EXAMPLE
+	PS C:\> Set-YoutubeDlItem -Template -Name "music" -Path ~\new\music.conf
+	
+	Changes the path of the location of the configuration file, for the 
+	youtube-dl template named "music".
+	
+.EXAMPLE
+	PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Path ~\new\archive.conf
+				
+	Changes the path of the location of the configuration file, for the 
+	youtube-dl job named "archive".
+	
+.EXAMPLE
+	Assuming the job 'archive' has a variable "Autonumber"=5
+	
+	PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Variable "Autonumber"
+				-Value "100"
+	
+	Changes the "Autonumber" variable of the job named "archive" to the new
+	value of "100". The next time the job will be run, this new value will 
+	be used.
+	
+.EXAMPLE
+	Assuming the job 'archive' has the variables "Autonumber"=5 and 
+	"Format"=best.
+	
+	Assuming the configuration file has the variable definitions "Autonumber"
+	and "Quality".
+	
+	PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Update -Quality "normal"
+	
+	Updates the job named "archive" to reflect its modified configuration file.
+	The configuration file has a new variable named "Quality", whose initial
+	value is provided through the '-Quality' parameter. The configuration file
+	lacks the "Format" variable now, so that is deleted from the job.
+	
+.LINK
+	Get-YoutubeDlItem
+	Set-YoutubeDlItem
+	Remove-YoutubeDlItem
+	about_ytdlWrapper
+	
+#>
+function Set-YoutubeDlItem
 {
+	[Alias("sydl")]
 	
 	[CmdletBinding(SupportsShouldProcess = $true)]
 	param
@@ -15,7 +119,7 @@
 		[switch]
 		$Job,
 		
-		[Parameter(Position = 1, Mandatory = $true)]
+		[Parameter(Position = 1, Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
 		[string]
 		$Name,
 		
@@ -101,6 +205,7 @@
 			# If the template doesn't exist, warn the user.
 			$templateList = Read-Templates
 			$templateObject = $templateList | Where-Object { $_.Name -eq $Name }
+			Write-Verbose "Validating parameters and the configuration file."
 			if ($null -eq $templateObject)
 			{
 				Write-Error "There is no template named: '$Name'."
@@ -121,12 +226,13 @@
 				}
 			}
 			
+			Write-Verbose "Changing the path property of the template object."
 			$templateObject.Path = $Path
 			
-			if ($PSCmdlet.ShouldProcess("$script:TemplateData", "Overwrite database with modified contents"))
+			if ($PSCmdlet.ShouldProcess("Updating database at '$script:TemplateData' with the changes.", "Are you sure you want to update the database at '$script:TemplateData' with the changes?", "Save File Prompt"))
 			{
-				Export-Clixml -Path $script:TemplateData -InputObject $templateList -WhatIf:$false -Confirm:$false `
-					| Out-Null
+				Export-Clixml -Path $script:TemplateData -InputObject $templateList -Force -WhatIf:$false `
+					-Confirm:$false | Out-Null
 			}
 		}
 		elseif ($Job -and -not $Update)
@@ -134,6 +240,7 @@
 			# If the job doesn't exist, warn the user.
 			$jobList = Read-Jobs
 			$jobObject = $jobList | Where-Object { $_.Name -eq $Name }
+			Write-Verbose "Validating parameters and the configuration file."
 			if ($null -eq $jobObject)
 			{
 				Write-Error "There is no job named: '$Name'."
@@ -148,6 +255,7 @@
 					return
 				}
 				
+				Write-Verbose "Changing the path property of the job object."
 				$jobObject.Path = $Path
 			}
 			else
@@ -180,10 +288,11 @@
 					return
 				}
 				
+				Write-Verbose "Changing the variable property of the job object."
 				$jobObject._Variables[$Variable] = $Value
 			}
 			
-			if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
+			if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
 			{
 				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
 					| Out-Null
@@ -195,6 +304,7 @@
 			# If the job doesn't exist, warn the user.
 			$jobList = Read-Jobs
 			$jobObject = $jobList | Where-Object { $_.Name -eq $Name }
+			Write-Verbose "Validating parameters and the configuration file."
 			if ($null -eq $jobObject)
 			{
 				Write-Error "There is no job named: '$Name'."
@@ -259,8 +369,9 @@
 			}
 			
 			# Set the modified variable hashtable.
+			Write-Verbose "Updating the variables of the job object."
 			$jobObject._Variables = $variableList
-			if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
+			if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
 			{
 				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
 					| Out-Null

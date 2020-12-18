@@ -3,20 +3,20 @@
 	Deletes a specified youtube-dl item.
 	
 .DESCRIPTION
-	The `Remove-YoutubeDlItem` cmdlet deletes one or more youtube-dl template
-	or job definitions, specified by their name(s).
+	The `Remove-YoutubeDlItem` cmdlet deletes one or more youtube-dl templates
+	or jobs, specified by their name(s).
 	
 .PARAMETER Template
-	Indicates that this cmdlet will be deleting a youtube-dl template.
+	Indicates that this cmdlet will be deleting youtube-dl template(s).
 	
 .PARAMETER Job
-	Indicates that this cmdlet will be deleting a youtube-dl job.
+	Indicates that this cmdlet will be deleting youtube-dl job(s).
 	
 .PARAMETER Names
 	Specifies the name(s) of the items to delete.
 	
-	Once you specify the '-DeleteTemplate/Job' option, this parameter will
-	autocomplete to valid existing names for the respective item type.
+	Once you specify a '-Template'/'-Job' switch, this parameter will
+	autocomplete to valid names for the respective item type.
 	
 .PARAMETER WhatIf
 	Shows what would happen if the cmdlet runs. The cmdlet does not run.
@@ -34,7 +34,7 @@
 	None
 	
 .NOTES
-	This cmdlet is aliased by default to '#TODO'.
+	This cmdlet is aliased by default to 'rydl'.
 	
 .EXAMPLE
 	PS C:\> Remove-YoutubeDlItem -Template -Names "music","video"
@@ -46,9 +46,16 @@
 	
 	Deletes a youtube-dl job named "archive".
 	
+.LINK
+	New-YoutubeDlItem
+	Get-YoutubeDlItem
+	Set-YoutubeDlItem
+	about_ytdlWrapper
+	
 #>
 function Remove-YoutubeDlItem
 {
+	[Alias("rydl")]
 	
 	[CmdletBinding(SupportsShouldProcess = $true)]
 	param
@@ -82,7 +89,7 @@ function Remove-YoutubeDlItem
 			Read-Jobs
 		}
 		
-		# Get the correct databaseb path.
+		# Get the correct database path.
 		$databasePath = if ($Template)
 		{
 			$script:TemplateData
@@ -95,7 +102,6 @@ function Remove-YoutubeDlItem
 	
 	process
 	{
-		
 		# Iterate through all the passed in names.
 		foreach ($name in $Names)
 		{
@@ -108,6 +114,7 @@ function Remove-YoutubeDlItem
 			}
 			
 			# Remove the object from the list.
+			Write-Verbose "Deleting the youtube-dl $(if($Template){`"template`"}else{`"job`"}) object."
 			$objectList.Remove($object) | Out-Null
 		}
 	}
@@ -115,9 +122,10 @@ function Remove-YoutubeDlItem
 	end
 	{
 		# Save the modified database.
-		if ($PSCmdlet.ShouldProcess($databasePath, "Overwrite database with modified contents"))
+		if ($PSCmdlet.ShouldProcess("Updating database at '$databasePath' with the changes (deletions).", "Are you sure you want to update the database at '$databasePath' with the changes (deletions)?", "Save File Prompt"))
 		{
-			Export-Clixml -Path $databasePath -InputObject $objectList -WhatIf:$false -Confirm:$false | Out-Null
+			Export-Clixml -Path $databasePath -InputObject $objectList -Force -WhatIf:$false `
+				-Confirm:$false | Out-Null
 		}
 	}
 }
