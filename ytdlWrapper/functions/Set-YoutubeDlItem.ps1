@@ -131,7 +131,64 @@
 		}
 		elseif ($Job -and -not $Update)
 		{
-			# TODO
+			# If the job doesn't exist, warn the user.
+			$jobList = Read-Jobs
+			$jobObject = $jobList | Where-Object { $_.Name -eq $Name }
+			if ($null -eq $jobObject)
+			{
+				Write-Error "There is no job named: '$Name'."
+				return
+			}
+			
+			if ($Path)
+			{
+				if (-not (Test-Path -Path $Path))
+				{
+					Write-Error "The configuration file path: '$Path' is invalid!"
+					return
+				}
+				
+				$jobObject.Path = $Path
+			}
+			else
+			{
+				# Validate that the job can be used.
+				switch ($jobObject.GetState())
+				{
+					"InvalidPath"
+					{
+						Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
+						return
+					}
+					"HasInputs"
+					{
+						Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+						return
+					}
+				}
+				
+				# Validate that the variable-to-modify exists.
+				if ($jobObject._Variables.Keys -notcontains $Variable)
+				{
+					Write-Error "The job: '$name' does not contain the variable named: '$Variable'!"
+					return
+				}
+				
+				if ([System.String]::IsNullOrWhiteSpace($Value)) 
+				{
+					Write-Error "The new value for the variable: '$Variable' cannot be empty!"
+					return
+				}
+				
+				$jobObject._Variables[$Variable] = $Value
+			}
+			
+			if ($PSCmdlet.ShouldProcess("$script:JobData", "Overwrite database with modified contents"))
+			{
+				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `
+					| Out-Null
+			}
+			
 		}
 		elseif ($Job -and $Update)
 		{
