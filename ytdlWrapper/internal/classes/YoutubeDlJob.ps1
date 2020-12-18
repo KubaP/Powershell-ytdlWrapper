@@ -3,6 +3,7 @@
 	Valid
 	InvalidPath
 	MismatchedVariables
+	UninitialisedVariables
 	HasInputs
 }
 
@@ -22,10 +23,10 @@ class YoutubeDlJob
 	
 	[JobState] GetState()
 	{
-		return [YoutubeDlJob]::GetState($this.Path, $this._Variables.Keys)
+		return [YoutubeDlJob]::GetState($this.Path, $this._Variables)
 	}
 	
-	static [JobState] GetState([string]$path, [System.Collections.Generic.List[string]]$variablesList)
+	static [JobState] GetState([string]$path, [hashtable]$variables)
 	{
 		# Check for an invalid path.
 		if (-not (Test-Path -Path $path))
@@ -46,11 +47,20 @@ class YoutubeDlJob
 		$configVariables =  Read-ConfigDefinitions -Path $path -VariableDefinitions
 		if (-not($configVariables.Count -eq 0))
 		{
-			$differenceA = $configVariables | Where-Object { $variablesList -notcontains $_ }
-			$differenceB = $variablesList | Where-Object { $configVariables -notcontains $_ }
+			$differenceA = $configVariables | Where-Object { $variables.Keys -notcontains $_ }
+			$differenceB = $variables.Keys | Where-Object { $configVariables -notcontains $_ }
 			if (($null -ne $differenceA) -or ($null -ne $differenceB))
 			{
 				return [JobState]::MismatchedVariables
+			}
+		}
+		
+		# Check that each variable has a value, i.e. is not uninitialised.
+		foreach ($value in $variables.Values)
+		{
+			if (($null -eq $value) -or [system.string]::IsNullOrWhiteSpace($value))
+			{
+				return [JobState]::UninitialisedVariables
 			}
 		}
 		
@@ -71,6 +81,21 @@ class YoutubeDlJob
 		foreach ($key in $this._Variables.Keys)
 		{
 			$returnList.Add($key)
+		}
+		
+		return $returnList
+	}
+	
+	[System.Collections.Generic.List[string]] GetNullVariables()
+	{
+		# Get any variable names defined in this object which don't have a value.
+		$returnList = New-Object -TypeName System.Collections.Generic.List[string]
+		foreach ($key in $this._Variables.Keys)
+		{
+			if (($null -eq $this._Variables[$key]) -or [system.string]::IsNullOrWhiteSpace($this._Variables[$key]))
+			{
+				$returnList.Add($key)
+			}
 		}
 		
 		return $returnList

@@ -70,7 +70,23 @@
 			
 			$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
 			$attributeCollection.Add($paramAttribute)				
-			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($variable, [String], $attributeCollection)
+			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($variable, [String], `
+				$attributeCollection)
+			
+			$parameterDictionary.Add($variable, $param)
+		}
+		
+		# Create parameters for every uninitialised variable.
+		foreach ($variable in $jobObject.GetNullVariables())
+		{
+			$paramAttribute = New-Object System.Management.Automation.ParameterAttribute
+			$paramAttribute.Mandatory = $true
+			$paramAttribute.ParameterSetName = "Job-Update"
+			
+			$attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+			$attributeCollection.Add($paramAttribute)				
+			$param = New-Object System.Management.Automation.RuntimeDefinedParameter($variable, [String], `
+				$attributeCollection)
 			
 			$parameterDictionary.Add($variable, $param)
 		}
@@ -168,6 +184,19 @@
 				else
 				{
 					Write-Error "The new variable: '$key' has not been provided an initial value as a parameter!"
+					return
+				}
+			}
+			# Then set the values of any uninitialised variables too.
+			foreach ($key in $jobObject.GetNullVariables())
+			{
+				if ($PSBoundParameters.ContainsKey($key))
+				{
+					$variableList[$key] = $PSBoundParameters[$key]
+				}
+				else
+				{
+					Write-Error "The existing variable: '$key' has not been provided an initial value as a parameter!"
 					return
 				}
 			}

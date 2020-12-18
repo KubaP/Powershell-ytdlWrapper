@@ -221,21 +221,21 @@ function New-YoutubeDlItem
 				}
 			}
 
-			switch ([YoutubeDlJob]::GetState($Path, $initialVariableInputs.Keys))
+			switch ([YoutubeDlJob]::GetState($Path, $initialVariableInputs))
 			{
 				"InvalidPath"
 				{
 					Write-Error "The configuration file path: '$Path' is invalid."
 					return
 				}
-				"MismatchedVariables"
-				{
-					Write-Error "There is a mismatch between the variables defined within the configuration file and the variable initial values passed to this cmdlet!`nFor help regarding the configuration file, see the `"#FUCKYOU`" section in the help at: `'about_ytdlWrapper_jobs`'."
-					return
-				}
 				"HasInputs"
 				{
 					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					return
+				}
+				"MismatchedVariables"
+				{
+					Write-Error "There is a mismatch between the variables defined within the configuration file and the variable initial values passed to this cmdlet!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
 					return
 				}
 			}

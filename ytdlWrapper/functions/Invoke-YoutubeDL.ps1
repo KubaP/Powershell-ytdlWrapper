@@ -226,17 +226,13 @@ function Invoke-YoutubeDl
 						Write-Error "The job: '$name' has a mismatch between the variables stored in the database and the variable definitions within the configuration file!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
 						return
 					}
-				}
-				
-				# Check that each variable has an initialised value, since this 
-				# be false if the configuration file is edited.
-				foreach ($key in $jobObject._Variables.Keys)
-				{
-					if ([system.string]::IsNullOrWhiteSpace($jobObject._Variables[$key]))
+					"UninitialisedVariables"
 					{
-						Write-Error "The job: '$name' has an uninitialised variable: '$key'! This must be initialised before running this job.`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+						Write-Error "The job: '$name' has uninitialised variables and cannot run!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+						return
 					}
 				}
+				
 				$completedJobContent = $jobObject.CompleteJob()
 				
 				# Write modified config file (with substituted variable values) to a
@@ -247,7 +243,7 @@ function Invoke-YoutubeDl
 				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
 				if ($PSCmdlet.ShouldProcess("$script:Folder\$hash.conf", "Create temporary configuration file"))
 				{
-					Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedTemplateContent `
+					Out-File -FilePath "$script:Folder\$hash.conf" -Force -InputObject $completedJobContent `
 						-ErrorAction Stop
 				}
 				if ($PSCmdlet.ShouldProcess("youtube-dl.exe", "Invoke process"))
