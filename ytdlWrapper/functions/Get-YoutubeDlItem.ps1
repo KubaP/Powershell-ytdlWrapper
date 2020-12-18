@@ -77,9 +77,8 @@ function Get-YoutubeDlItem
 		[switch]
 		$Job,
 		
-		# TODO: Tab completion.
-		[Parameter(Position = 1, Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = "Template-Specific")]
-		[Parameter(Position = 1, Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = "Job-Specific")]
+		[Parameter(Position = 1, Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Template-Specific")]
+		[Parameter(Position = 1, Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = "Job-Specific")]
 		[Alias("Name")]
 		[string[]]
 		$Names,

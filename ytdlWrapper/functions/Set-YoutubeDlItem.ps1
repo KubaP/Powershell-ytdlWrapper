@@ -133,7 +133,6 @@ function Set-YoutubeDlItem
 		[switch]
 		$Update,
 		
-		# TODO: Tab completion.
 		[Parameter(Position = 2, Mandatory = $true, ParameterSetName = "Job-Property")]
 		[string]
 		$Variable,

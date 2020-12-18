@@ -97,7 +97,6 @@ function Invoke-YoutubeDl
 		[string]
 		$Path,
 		
-		# TODO: Tab completion.
 		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Template")]
 		[Parameter(Position = 1, Mandatory = $true, ParameterSetName = "Job", ValueFromPipelineByPropertyName = $true)]
 		[Alias("Name")]

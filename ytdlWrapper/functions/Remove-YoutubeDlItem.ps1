@@ -69,7 +69,6 @@ function Remove-YoutubeDlItem
 		[switch]
 		$Job,
 		
-		# TODO: Tab completion
 		[Parameter(Position = 1, Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
 		[Alias("Name")]
 		[string[]]
