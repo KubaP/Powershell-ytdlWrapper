@@ -212,17 +212,15 @@ function Set-YoutubeDlItem
 			}
 			
 			# Validate that the new configuration file exists and can be used.
-			switch ([YoutubeDlTemplate]::GetState($Path)) {
-				"InvalidPath"
-				{
-					Write-Error "The configuration file path: '$Path' is invalid."
+			if ([YoutubeDlTemplate]::HasInvalidPath($Path))
+			{
+				Write-Error "The configuration file path: '$Path' is invalid."
+				return
+			}
+			if ([YoutubeDlTemplate]::HasNoInput($Path))
+			{
+				Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
-				}
-				"NoInputs"
-				{
-					Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
-					return
-				}
 			}
 			
 			Write-Verbose "Changing the path property of the template object."
@@ -248,9 +246,9 @@ function Set-YoutubeDlItem
 			
 			if ($Path)
 			{
-				if (-not (Test-Path -Path $Path))
+				if ([YoutubeDlJob]::HasInvalidPath($Path))
 				{
-					Write-Error "The configuration file path: '$Path' is invalid!"
+					Write-Error "The configuration file path: '$Path' is invalid."
 					return
 				}
 				
@@ -260,18 +258,15 @@ function Set-YoutubeDlItem
 			else
 			{
 				# Validate that the job can be used.
-				switch ($jobObject.GetState())
+				if ($jobObject.HasInvalidPath())
 				{
-					"InvalidPath"
-					{
-						Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
-						return
-					}
-					"HasInputs"
-					{
-						Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
-						return
-					}
+					Write-Error "The configuration file path: '$Path' is invalid."
+					return
+				}
+				if ($jobObject.HasInputs())
+				{
+					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					return
 				}
 				
 				# Validate that the variable-to-modify exists.
@@ -311,18 +306,15 @@ function Set-YoutubeDlItem
 			}
 			
 			# Validate that the job can be used.
-			switch ($jobObject.GetState())
+			if ($jobObject.HasInvalidPath())
 			{
-				"InvalidPath"
-				{
-					Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
-					return
-				}
-				"HasInputs"
-				{
-					Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
-					return
-				}
+				Write-Error "The configuration file path: '$Path' is invalid."
+				return
+			}
+			if ($jobObject.HasInputs())
+			{
+				Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+				return
 			}
 			
 			# Figure out which are the new variables in the configuration file

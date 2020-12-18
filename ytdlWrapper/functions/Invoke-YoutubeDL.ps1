@@ -15,14 +15,14 @@
 	This cmdlet can be used to run a youtube-dl job, which happens without
 	user input.
 	
-.PARAMETER Path
-	Specifies the path of the location of the configuration file to use.
-	
 .PARAMETER Template
 	Indicates that this cmdlet will be running a youtube-dl template.
 	
 .PARAMETER Job
 	Indicates that this cmdlet will be running a youtube-dl job.
+	
+.PARAMETER Path
+	Specifies the path of the location of the configuration file to use.
 	
 .PARAMETER Names
 	Specifies the name(s) of the items to get.
@@ -179,18 +179,15 @@ function Invoke-YoutubeDl
 			}
 			
 			# Validate that the template can be used.
-			switch ($templateObject.GetState())
+			if ($templateObject.HasInvalidPath())
 			{
-				"InvalidPath"
-				{
-					Write-Error "The template: '$name' has a configuration file path: '$($templateObject.Path)' which is invalid!"
+				Write-Error "The template: '$name' has a configuration file path: '$($templateObject.Path)' which is invalid!"
 					return
-				}
-				"NoInputs"
-				{
-					Write-Error "The template: '$name' has a configuration file with no input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
+			}
+			if ($templateObject.HasNoInput())
+			{
+				Write-Error "The template: '$name' has a configuration file with no input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
-				}
 			}
 			
 			# Get the necessary inputs for this template, and assign each the 
@@ -251,28 +248,25 @@ function Invoke-YoutubeDl
 				}
 				
 				# Validate that the job can be used.
-				switch ($jobObject.GetState())
+				if ($jobObject.HasInvalidPath())
 				{
-					"InvalidPath"
-					{
-						Write-Error "The job: '$name' has a configuration file path: '$($jobObject.Path)' which is invalid!"
-						return
-					}
-					"HasInputs"
-					{
-						Write-Error "The job: '$name' has input definitions which a job cannot have!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
-						return
-					}
-					"MismatchedVariables"
-					{
-						Write-Error "The job: '$name' has a mismatch between the variables stored in the database and the variable definitions within the configuration file!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
-						return
-					}
-					"UninitialisedVariables"
-					{
-						Write-Error "The job: '$name' has uninitialised variables and cannot run!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
-						return
-					}
+					Write-Error "The configuration file path: '$Path' is invalid."
+					return
+				}
+				if ($jobObject.HasInputs())
+				{
+					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					return
+				}
+				if ($jobObject.HasMismatchedVariables())
+				{
+					Write-Error "The job: '$name' has a mismatch between the variables stored in the database and the variable definitions within the configuration file!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+					return
+				}
+				if ($jobObject.HasUninitialisedVariables())
+				{
+					Write-Error "The job: '$name' has uninitialised variables and cannot run!`nRun the `Set-YoutubeDlItem` cmdlet with the '-Update' switch to fix the issue."
+					return
 				}
 				
 				$completedJobContent = $jobObject.CompleteJob()

@@ -211,18 +211,15 @@ function New-YoutubeDlItem
 			}
 			
 			# Validate that the configuration file exists and can be used.
-			switch ([YoutubeDlTemplate]::GetState($Path))
+			if ([YoutubeDlTemplate]::HasInvalidPath($Path))
 			{
-				"InvalidPath"
-				{
-					Write-Error "The configuration file path: '$Path' is invalid."
+				Write-Error "The configuration file path: '$Path' is invalid."
+				return
+			}
+			if ([YoutubeDlTemplate]::HasNoInput($Path))
+			{
+				Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
-				}
-				"NoInputs"
-				{
-					Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
-					return
-				}
 			}
 			
 			if (-not $DontMoveConfigurationFile -and $PSCmdlet.ShouldProcess("Moving configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Templates'.", "Are you sure you want to move the configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Templates'?", "Move File Prompt")) 
@@ -287,23 +284,15 @@ function New-YoutubeDlItem
 				}
 			}
 			# Validate that the configuration file exists and can be used.
-			switch ([YoutubeDlJob]::GetState($Path, $initialVariableValues))
+			if ([YoutubeDlJob]::HasInvalidPath($Path))
 			{
-				"InvalidPath"
-				{
-					Write-Error "The configuration file path: '$Path' is invalid."
-					return
-				}
-				"HasInputs"
-				{
-					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
-					return
-				}
-				"MismatchedVariables"
-				{
-					Write-Error "There is a mismatch between the variables defined within the configuration file and the variable initial values passed to this cmdlet.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
-					return
-				}
+				Write-Error "The configuration file path: '$Path' is invalid."
+				return
+			}
+			if ([YoutubeDlJob]::HasInputs($Path))
+			{
+				Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+				return
 			}
 			
 			if (-not $DontMoveConfigurationFile -and $PSCmdlet.ShouldProcess("Moving configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Jobs'.", "Are you sure you want to move the configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Jobs'?", "Move File Prompt"))

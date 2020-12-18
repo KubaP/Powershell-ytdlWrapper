@@ -20,53 +20,85 @@ class YoutubeDlJob
 		$this.Path = $path
 		$this._Variables = $variableValues
 	}
-	
+		
 	[JobState] GetState()
 	{
-		return [YoutubeDlJob]::GetState($this.Path, $this._Variables)
-	}
-	
-	static [JobState] GetState([string]$path, [hashtable]$variables)
-	{
-		# Check for an invalid path.
-		if (-not (Test-Path -Path $path))
+		# Check through all the invalid states for a job.
+		if ($this.HasInvalidPath())
 		{
 			return [JobState]::InvalidPath
 		}
-		
-		# Check that there are no input definitions in the config file
-		# since this is a job object.
-		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -gt 0)
+		if ($this.HasInputs())
 		{
 			return [JobState]::HasInputs
 		}
-		
-		# Check that the variables stored in the job object match the
-		# variables defined in the configuration file, as long as there 
-		# actually is a variable defined in the file.
-		$configVariables =  Read-ConfigDefinitions -Path $path -VariableDefinitions
+		if ($this.HasMismatchedVariables())
+		{
+			return [JobState]::MismatchedVariables
+		}
+		if ($this.HasUninitialisedVariables())
+		{
+			return [JobState]::UninitialisedVariables
+		}
+		return [JobState]::Valid
+	}
+	
+	[boolean] HasInvalidPath()
+	{
+		return [youtubeDlJob]::HasInvalidPath($this.Path)
+	}
+	static [boolean] HasInvalidPath([string]$path)
+	{
+		# Check whether the file path is valid.
+		if (Test-Path -Path $path)
+		{
+			return $false
+		}
+		return $true
+	}
+	
+	[boolean] HasInputs()
+	{
+		return [YoutubeDlJob]::HasInputs($this.Path)
+	}
+	static [boolean] HasInputs([string]$path)
+	{
+		# Check whether there are input definitions.
+		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -gt 0)
+		{
+			return $false
+		}
+		return $true
+	}
+	
+	[boolean] HasMismatchedVariables()
+	{
+		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
 		if (-not($configVariables.Count -eq 0))
 		{
-			$differenceA = $configVariables | Where-Object { $variables.Keys -notcontains $_ }
-			$differenceB = $variables.Keys | Where-Object { $configVariables -notcontains $_ }
+			$differenceA = $configVariables | Where-Object { $this._Variables.Keys -notcontains $_ }
+			$differenceB = $this._Variables.Keys | Where-Object { $configVariables -notcontains $_ }
 			if (($null -ne $differenceA) -or ($null -ne $differenceB))
 			{
-				return [JobState]::MismatchedVariables
+				return $true
 			}
 		}
-		
+		return $false
+	}
+	
+	[boolean] HasUninitialisedVariables()
+	{
 		# Check that each variable has a value, i.e. is not uninitialised.
-		foreach ($value in $variables.Values)
+		foreach ($value in $this._Variables.Values)
 		{
 			if (($null -eq $value) -or [system.string]::IsNullOrWhiteSpace($value))
 			{
-				return [JobState]::UninitialisedVariables
+				return $true
 			}
 		}
-		
-		# After these checks, this template should be valid.
-		return [JobState]::Valid
+		return $false
 	}
+	
 	
 	[System.Collections.Generic.List[string]] GetVariables()
 	{

@@ -1,4 +1,5 @@
-﻿enum TemplateState {
+﻿enum TemplateState
+{
 	Valid
 	InvalidPath
 	NoInputs
@@ -18,26 +19,46 @@ class YoutubeDlTemplate
 	
 	[TemplateState] GetState()
 	{
-		return [YoutubeDlTemplate]::GetState($this.Path)
-	}
-	
-	static [TemplateState] GetState([string]$path)
-	{
-		# Check for an invalid path.
-		if (-not (Test-Path -Path $path))
+		# Check through all the invalid states for a template.
+		if ($this.HasInvalidPath())
 		{
 			return [TemplateState]::InvalidPath
 		}
-		
-		# Check that the template has at least one input.
-		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -eq 0)
+		if ($this.HasNoInput())
 		{
 			return [TemplateState]::NoInputs
 		}
-		
-		# After these checks, this template should be valid.
 		return [TemplateState]::Valid
 	}
+	
+	[boolean] HasInvalidPath()
+	{
+		return [YoutubeDlTemplate]::HasInvalidPath($this.Path)
+	}
+	static [boolean] HasInvalidPath([string]$path)
+	{
+		# Check whether the file path is valid.
+		if (Test-Path -Path $path)
+		{
+			return $false
+		}
+		return $true
+	}
+	
+	[boolean] HasNoInput()
+	{
+		return [YoutubeDlTemplate]::HasNoInput($this.Path)
+	}
+	static [boolean] HasNoInput([string]$path)
+	{
+		# Check whether the template has no inputs.
+		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -gt 0)
+		{
+			return $false
+		}
+		return $true
+	}
+	
 	
 	[System.Collections.Generic.List[string]] GetInputs()
 	{
