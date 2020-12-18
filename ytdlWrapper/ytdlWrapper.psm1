@@ -10,14 +10,22 @@ $script:JobData = "$env:APPDATA\Powershell\ytdlWrapper\job-database.xml"
 Write-Debug "`e[4mMODULE-WIDE VARIABLES`e[0m"
 Write-Debug "Module root folder: $ModuleRoot"
 Write-Debug "Module version: $ModuleVersion"
-Write-Debug "Database file: $DataPath"
+Write-Debug "Template Database file: $TemplateData"
+Write-Debug "Job Database file: $JobData"
+Write-Debug "Data Folder: $Folder"
 
 # Create the module data-storage folder if it doesn't exist.
-if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ignore)) {
+if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ignore))
+{
 	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell\ytdlWrapper" -Force -ErrorAction Stop
 	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Templates" -Force -ErrorAction Stop
 	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Jobs" -Force -ErrorAction Stop
 	Write-Debug "Created database folders!"
+}
+
+if ($null -eq (Get-Command youtube-dl.exe -ErrorAction SilentlyContinue))
+{
+	Write-Error "The 'youtube-dl.exe' binary could not be found! Make sure the %PATH% variable has the location of the binary."
 }
 
 # Potentially force this module script to dot-source the files, rather than 
@@ -25,7 +33,8 @@ if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ign
 $doDotSource = $global:ModuleDebugDotSource
 $doDotSource = $true # Needed to make code coverage tests work
 
-function Resolve-Path_i {
+function Resolve-Path_i
+{
 	<#
 	.SYNOPSIS
 		Resolves a path, gracefully handling a non-existent path.
@@ -44,7 +53,8 @@ function Resolve-Path_i {
 
 	#>
 	[CmdletBinding()]
-	Param (
+	Param
+	(
 		[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
 		[string]
 		$Path
@@ -54,7 +64,8 @@ function Resolve-Path_i {
 	$resolvedPath = Resolve-Path -Path $Path -ErrorAction Ignore
 	
 	# If NULL, then just return an empty string.
-	if ($null -eq $resolvedPath) {
+	if ($null -eq $resolvedPath)
+	{
 		$resolvedPath = ""
 	}
 	
@@ -81,7 +92,8 @@ function Import-ModuleFile {
 		
 	#>
 	[CmdletBinding()]
-	Param (
+	Param
+	(
 		[Parameter(Mandatory = $true, Position = 0)]
 		[string]
 		$Path
@@ -90,12 +102,14 @@ function Import-ModuleFile {
 	# Get the resolved path to avoid any cross-OS issues.
 	$resolvedPath = $ExecutionContext.SessionState.Path.GetResolvedPSPathFromPSPath($Path).ProviderPath
 	
-	if ($doDotSource) {
+	if ($doDotSource)
+	{
 		# Load the file through dot-sourcing.
 		. $resolvedPath	
 		Write-Debug "Dot-sourcing file: $resolvedPath"
 	}
-	else {
+	else
+	{
 		# Load the file through different method (unknown atm?).
 		$ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($resolvedPath))), $null, $null) 
 		Write-Debug "Importing file: $resolvedPath"
@@ -148,12 +162,14 @@ if ($importIndividualFiles) {
 	. Import-ModuleFile -Path "$ModuleRoot\internal\preimport.ps1"
 	
 	# Import all internal functions.
-	foreach ($file in (Get-ChildItem "$ModuleRoot\internal\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {
+	foreach ($file in (Get-ChildItem "$ModuleRoot\internal\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore))
+	{
 		. Import-ModuleFile -Path $file.FullName
 	}
 	
 	# Import all public functions.
-	foreach ($file in (Get-ChildItem "$ModuleRoot\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore)) {	
+	foreach ($file in (Get-ChildItem "$ModuleRoot\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore))
+	{	
 		. Import-ModuleFile -Path $file.FullName
 	}
 	
