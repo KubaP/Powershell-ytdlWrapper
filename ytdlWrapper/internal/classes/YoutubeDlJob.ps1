@@ -133,7 +133,7 @@ class YoutubeDlJob
 		return $returnList
 	}
 	
-	[string] CompleteJob()
+	[string] GetCompletedConfigFile()
 	{
 		# Go through all variable definitions and substitute the stored variable
 		# value, before returning the modified file content string.
@@ -146,7 +146,7 @@ class YoutubeDlJob
 		return $configFilestream
 	}
 	
-	[string] ExecuteScriptblocks()
+	[string] UpdateVariableValues()
 	{
 		$scriptblockDefinitions = Read-ConfigDefinitions -Path $this.Path -VariableScriptblocks
 		# Iterate through all scriptblock definitions and execute them.

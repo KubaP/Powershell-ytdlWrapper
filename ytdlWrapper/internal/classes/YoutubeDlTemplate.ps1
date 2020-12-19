@@ -66,7 +66,7 @@ class YoutubeDlTemplate
 		return Read-ConfigDefinitions -Path $this.Path -InputDefinitions
 	}
 	
-	[string] CompleteTemplate([hashtable]$inputs)
+	[string] GetCompletedConfigFile([hashtable]$inputs)
 	{
 		# Go through all input definitions and substitute the user provided
 		# value, before returning the modified file content string.

@@ -208,7 +208,7 @@ function Invoke-YoutubeDl
 				}
 			}
 			
-			$completedTemplateContent = $templateObject.CompleteTemplate($inputs)
+			$completedTemplateContent = $templateObject.GetCompletedConfigFile($inputs)
 			
 			# Write modified config file (with substituted user inputs) to a
 			# temporary file. This is done because it is easier to use the 
@@ -269,7 +269,7 @@ function Invoke-YoutubeDl
 					return
 				}
 				
-				$completedJobContent = $jobObject.CompleteJob()
+				$completedJobContent = $jobObject.GetCompletedConfigFile()
 				
 				# Write modified config file (with substituted variable values) to a
 				# temporary file. This is done because it is easier to use the 
@@ -296,7 +296,7 @@ function Invoke-YoutubeDl
 				
 				# If a scriptblock didn't return a value, warn the user.
 				Write-Verbose "Updating variable values for the job."
-				$return = $jobObject.ExecuteScriptblocks()
+				$return = $jobObject.UpdateVariableValues()
 				if (-not [System.String]::IsNullOrWhiteSpace($return))
 				{
 					Write-Error "The job: '$name' has a scriptblock definition named: '$return' which did not return a value!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
