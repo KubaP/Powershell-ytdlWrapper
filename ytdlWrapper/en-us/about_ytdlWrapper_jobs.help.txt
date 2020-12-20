@@ -38,6 +38,9 @@ SETTING UP A CONFIGURATION FILE
 	 [!]The module cannot check whether a scriptblock always returns a value, so
 	 	this is on the user to ensure is true.
 	
+ [!]There are input definitions for a template file. These **cannot** be used
+	within a configuration file designed for a job.
+	
 	
  == An example of using a variable to auto number files:
 		

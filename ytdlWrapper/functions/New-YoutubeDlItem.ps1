@@ -219,7 +219,7 @@ function New-YoutubeDlItem
 			}
 			if ([YoutubeDlTemplate]::HasNoInput($Path))
 			{
-				Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
+				Write-Error "The configuration file located at: '$Path' has no input definitions.`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
 			}
 			
@@ -292,7 +292,7 @@ function New-YoutubeDlItem
 			}
 			if ([YoutubeDlJob]::HasInputs($Path))
 			{
-				Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+				Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."
 				return
 			}
 			

@@ -202,7 +202,7 @@ function Invoke-YoutubeDl
 			}
 			if ($templateObject.HasNoInput())
 			{
-				Write-Error "The template: '$name' has a configuration file with no input definitions!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_templates`'."
+				Write-Error "The template: '$name' has a configuration file with no input definitions!`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_templates`'."
 					return
 			}
 			
@@ -271,7 +271,7 @@ function Invoke-YoutubeDl
 				}
 				if ($jobObject.HasInputs())
 				{
-					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					Write-Error "The configuration file at: '$Path' has input definitions, which a job cannot have.`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."
 					return
 				}
 				if ($jobObject.HasMismatchedVariables())
@@ -315,7 +315,7 @@ function Invoke-YoutubeDl
 				$return = $jobObject.UpdateVariableValues()
 				if (-not [System.String]::IsNullOrWhiteSpace($return))
 				{
-					Write-Error "The job: '$name' has a scriptblock definition named: '$return' which did not return a value!`nFor help regarding the configuration file, see the `"#TODO`" section in the help at: `'about_ytdlWrapper_jobs`'."
+					Write-Error "The job: '$name' has a scriptblock definition named: '$return' which did not return a value!`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."
 					return
 				}
 				
