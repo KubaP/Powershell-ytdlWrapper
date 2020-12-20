@@ -25,14 +25,21 @@
 	Specifies the path of the location of the configuration file to use.
 	
 .PARAMETER Names
-	Specifies the name(s) of the items to get.
+	Specifies the name(s) of the items to run.
 	
-	Once you specify the '-Template'/'-Job' switch, this parameter will
+ [!]Once you specify the '-Template'/'-Job' switch, this parameter will
 	autocomplete to valid names for the respective item type.
 	
 	If specifying the '-Template' switch, you can only pass in one name.
 	
 	If specifying the '-Job' switch, you can pass in multiple names.
+
+.PARAMETER WhatIf
+	Shows what would happen if the cmdlet runs. The cmdlet does not run.
+	
+.PARAMETER Confirm
+	Prompts you for confirmation before running any state-altering actions
+	in this cmdlet.
 	
 .EXAMPLE
 	PS C:\> Invoke-YoutubeDl -Path ~\download.conf
@@ -66,6 +73,15 @@
 	None
 	
 .NOTES
+	When executing a template using the '-Template' switch, a dynamic parameter
+	corresponding to each input definition, found within the configuration
+	file, will be generated. The parameter sets the value of the input to make
+	the template ready for execution.
+	
+	For detailed help regarding running a template, see the 
+	"INVOKING A TEMPLATE" section in the help at:
+	'about_ytdlWrapper_templates'.
+
 	This cmdlet is aliased by default to 'iydl'.
 	
 .LINK

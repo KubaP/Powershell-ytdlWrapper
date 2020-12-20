@@ -24,7 +24,7 @@
 .PARAMETER Name
 	Specifies the name of the item to be changed.
 	
-	Once you specify the '-Template'/'-Job' switch, this parameter will
+ [!]Once you specify the '-Template'/'-Job' switch, this parameter will
 	autocomplete to valid names for the respective item type.
 	
 .PARAMETER Path
@@ -32,6 +32,9 @@
 	
 .PARAMETER Variable
 	Specifies the name of the variable to change the value of for a job.
+	
+ [!]Once you specify a valid '-Name' when using the '-Job' switch, this
+	parameter will autocomplete to valid names of variables within this job.
 	
 .PARAMETER Value
 	Specifies the new value of the variable being changed.
@@ -56,6 +59,15 @@
 	YoutubeDlJob
 	
 .NOTES
+	When changing a job using the '-Job' switch, a dynamic parameter
+	corresponding to each NEW variable definition, found within the
+	configuration file, will be generated. The parameter sets the initial
+	value of the variable to make the job ready for execution.
+	
+	For detailed help regarding updating a job, see the 
+	"CHANGING THE PROPERTIES OF A JOB" section in the help at:
+	'about_ytdlWrapper_jobs'.
+	
 	This cmdlet is aliased by default to 'sydl'.
 	
 .EXAMPLE

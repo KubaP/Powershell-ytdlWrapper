@@ -15,7 +15,7 @@
 .PARAMETER Names
 	Specifies the name(s) of the items to delete.
 	
-	Once you specify a '-Template'/'-Job' switch, this parameter will
+ [!]Once you specify a '-Template'/'-Job' switch, this parameter will
 	autocomplete to valid names for the respective item type.
 	
 .PARAMETER WhatIf

@@ -55,11 +55,12 @@
 .NOTES
 	When creating a job using the '-Job' switch, a dynamic parameter
 	corresponding to each variable definition, found within the configuration
-	file, will be generated. This parameter sets the initial value of the
+	file, will be generated. The parameter sets the initial value of the
 	variable to make the job ready for first-time execution.
 	
 	For detailed help regarding the configuration file, see the 
-	"#TODO" section in the help at: 'about_ytdlWrapper_jobs'.
+	"SETTING UP A CONFIGURATION FILE" section in the help at:
+	'about_ytdlWrapper_jobs'.
 	
 	This cmdlet is aliased by default to 'nydl'.
 	
