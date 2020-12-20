@@ -1,0 +1,1190 @@
+﻿<?xml version="1.0" encoding="utf-16"?>
+<Configuration>
+	<!-- General settings. -->
+	<DefaultSettings>
+		<!-- Shows a '#ERR' string when an error occurs it retrieving data. -->
+		<DisplayError/>
+		
+	</DefaultSettings>
+	
+	<!-- Selection Sets to simplify view declerations. -->
+	<SelectionSets>
+		<!-- Template Set -->
+		<SelectionSet>
+			<Name>Set.Template</Name>
+			<Types>
+				<TypeName>YoutubeDlTemplate</TypeName>
+			</Types>
+		</SelectionSet>
+		
+		<!-- Job Set -->
+		<SelectionSet>
+			<Name>Set.Job</Name>
+			<Types>
+				<TypeName>YoutubeDlJob</TypeName>
+			</Types>
+		</SelectionSet>
+		
+	</SelectionSets>
+	
+	<!-- View definitions. -->
+	<ViewDefinitions>
+		<!-- template LIST -->
+		<View>
+			<Name>Template.List</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Template</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<ListControl>
+				<ListEntries>
+					
+					<!-- BASIC Formatting -->
+					<ListEntry>
+						<ListItems>
+							
+							<!-- The template name. -->
+							<ListItem>
+								<Label>Name</Label>
+								<ScriptBlock>
+									"`e[1;4m$($_.Name)`e[0m"
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The template overall state. -->
+							<ListItem>
+								<Label>Status</Label>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid`e[0m"
+										}
+										"InvalidPath"
+										{
+											return "`e[31mInvalid configuration file path!`e[0m"
+										}
+										"NoInputs"
+										{
+											return "`e[31mHas no inputs!`e[0m"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The template configuration file location. -->
+							<ListItem>
+								<Label>Configuration File Path</Label>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
+										"InvalidPath"
+										{
+											return "$($obj.Path) `e[4m(Does not point to a valid template configuration)`e[0m!"
+										}
+										"NoInputs"
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The template inputs. -->
+							<ListItem>
+								<Label>Inputs</Label>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											$string = ""
+											foreach ($input in $obj.GetInputs())
+											{
+												$string += "$input, "
+											}
+											$string = $string.Remove($string.Length - 2)
+											return $string
+										}
+										"InvalidPath"
+										{
+											return "`e[4mCannot read the inputs`e[0m!"
+										}
+										"NoInputs"
+										{
+											return "`e[4mThere are no defined inputs`e[0m!"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+						</ListItems>
+					</ListEntry>
+					
+					<!-- FANCY Formatting -->
+					<ListEntry>
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<SelectionSetName>Set.Template</SelectionSetName>
+								<ScriptBlock>
+									if ($env:WT_SESSION) {
+										return $true
+									}
+								</ScriptBlock>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<ListItems>
+						
+							<!-- The template name. -->
+							<ListItem>
+								<Label>Name</Label>
+								<ScriptBlock>
+									"`e[1;4m$($_.Name)`e[0m"
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The template overall state. -->
+							<ListItem>
+								<Label>Status</Label>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid ✅`e[0m"
+										}
+										"InvalidPath"
+										{
+											return "`e[31;21mInvalid configuration file path`e[0m❗"
+										}
+										"NoInputs"
+										{
+											return "`e[31;21mHas no inputs`e[0m❗"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The template configuration file location. -->
+							<ListItem>
+								<Label>Configuration File Path</Label>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
+										"InvalidPath"
+										{
+											return "$($obj.Path) `e[4m(Does not point to a valid template configuration)`e[0m❗"
+										}
+										"NoInputs"
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The template inputs. -->
+							<ListItem>
+								<Label>Inputs</Label>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											$string = ""
+											foreach ($input in $obj.GetInputs())
+											{
+												$string += "$input, "
+											}
+											$string = $string.Remove($string.Length - 2)
+											return $string
+										}
+										"InvalidPath"
+										{
+											return "`e[4mCannot read the inputs`e[0m❗"
+										}
+										"NoInputs"
+										{
+											return "`e[4mThere are no defined inputs`e[0m❗"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+						</ListItems>
+					</ListEntry>
+					
+				</ListEntries>
+			</ListControl>
+		</View>
+		
+		<!-- template CUSTOM -->
+		<View>
+			<Name>Template.Custom</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Template</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<CustomControl>
+				<CustomEntries>
+					
+					<!-- BASIC Formatting -->
+					<CustomEntry>
+						<CustomItem>
+							<Frame>
+								<CustomItem>
+									<NewLine />
+									
+									<ExpressionBinding>
+										<ScriptBlock>
+											"class YoutubeDlTemplate"
+										</ScriptBlock>
+									</ExpressionBinding>
+									
+									<NewLine />
+									<Text>{</Text>
+									<NewLine />
+									
+									<Frame>
+										<LeftIndent>4</LeftIndent>
+										<CustomItem>
+											
+											<!-- The template name. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													"Name = $($_.Name)"
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The template overall state. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													"State = $($_.GetState())"
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The configuration file path. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													"Path = $($_.Path)"
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The inputs. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													if ($_.GetState() -eq "InvalidPath")
+													{
+														"Inputs = NULL"
+													}
+													elseif ($_.GetState() -eq "NoInputs")
+													{
+														"Inputs = NULL"
+													}
+													else
+													{
+														"Inputs = $($_.GetInputs())"
+													}
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+																						
+										</CustomItem>
+									</Frame>
+									
+									<Text>}</Text>
+									
+								</CustomItem>
+							</Frame>
+						</CustomItem>
+					</CustomEntry>
+					
+				</CustomEntries>
+			</CustomControl>
+		</View>
+		
+		<!-- template TABLE -->
+		<View>
+			<Name>Template.Table</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Template</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<TableControl>
+				<!-- The table headers. -->
+				<TableHeaders>
+					
+					<TableColumnHeader>
+						<Label>Name</Label>
+						<Width>20</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+					<TableColumnHeader>
+						<Label>Configuration File Path</Label>
+						<Width>50</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+					<TableColumnHeader>
+						<Label>Inputs</Label>
+						<Width>30</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+					<TableColumnHeader>
+						<Label>Status</Label>
+						<Width>10</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+				</TableHeaders>
+				
+				<!-- The table rows. -->
+				<TableRowEntries>
+					
+					<!-- BASIC Formatting -->
+					<TableRowEntry>
+						<TableColumnItems>
+							
+							<!-- The template name. -->
+							<TableColumnItem>
+								<PropertyName>Name</PropertyName>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The template configuration file path. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
+										"InvalidPath"
+										{
+											return "`e[31mInvalid file!`e[0m"
+										}
+										"NoInputs"
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The template inputs. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											$string = ""
+											foreach ($input in $obj.GetInputs())
+											{
+												$string += "$input, "
+											}
+											$string = $string.Remove($string.Length - 2)
+											return $string
+										}
+										"InvalidPath"
+										{
+											return "`e[31mCannot read inputs!`e[0m"
+										}
+										"NoInputs"
+										{
+											return "`e[31mNo defined inputs!`e[0m"
+										}
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The template state. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid`e[0m"
+										}
+										"InvalidPath"
+										{
+											return "`e[31mInvalid!`e[0m"
+										}
+										"NoInputs"
+										{
+											return "`e[31mInvalid!`e[0m"
+										}
+									}
+								</ScriptBlock>
+							</TableColumnItem>
+							
+							
+						</TableColumnItems>
+					</TableRowEntry>
+					
+					<!-- FANCY Formatting -->
+					<TableRowEntry>
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<SelectionSetName>Set.Template</SelectionSetName>
+								<ScriptBlock>
+									if ($env:WT_SESSION) {
+										return $true
+									}
+								</ScriptBlock>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<TableColumnItems>
+							<!-- The template name. -->
+							<TableColumnItem>
+								<PropertyName>Name</PropertyName>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The template configuration file path. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
+										"InvalidPath"
+										{
+											return "`e[31;21mInvalid file!`e[0m"
+										}
+										"NoInputs"
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The template inputs. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											$string = ""
+											foreach ($input in $obj.GetInputs())
+											{
+												$string += "$input, "
+											}
+											$string = $string.Remove($string.Length - 2)
+											return $string
+										}
+										"InvalidPath"
+										{
+											return "`e[31;21mCannot read inputs!`e[0m"
+										}
+										"NoInputs"
+										{
+											return "`e[31;21mNo defined inputs!`e[0m"
+										}
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The template state. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid ✅`e[0m"
+										}
+										"InvalidPath"
+										{
+											return "`e[31mInvalid`e[0m❗"
+										}
+										"NoInputs"
+										{
+											return "`e[31mInvalid`e[0m❗"
+										}
+									}
+								</ScriptBlock>
+							</TableColumnItem>
+							
+						</TableColumnItems>
+					</TableRowEntry>
+					
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		
+		<!-- template WIDE -->
+		<View>
+			<Name>Template.Wide</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Template</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<WideControl>
+				<WideEntries>
+					
+					<!-- BASIC Formatting -->
+					<WideEntry>
+						<!-- The template name. -->
+						<WideItem>
+							<ScriptBlock>
+								$name = $_.Name
+								switch ($_.GetState()) {
+									"Valid"
+									{
+										return "`e[32m$name`e[0m"
+									}
+									"InvalidPath"
+									{
+										return "`e[31m$name!`e[0m"
+									}
+									"NoInputs"
+									{
+										return "`e[31m$name!`e[0m"
+									}
+								}
+							</ScriptBlock>
+						</WideItem>
+					</WideEntry>
+					
+					<!-- FANCY Formatting -->
+					<WideEntry>
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<SelectionSetName>Set.Template</SelectionSetName>
+								<ScriptBlock>
+									if ($env:WT_SESSION) {
+										return $true
+									}
+								</ScriptBlock>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<!-- The template name. -->
+						<WideItem>
+							<ScriptBlock>
+								$name = $_.Name
+								switch ($_.GetState()) {
+									"Valid"
+									{
+										return "`e[32m$name✅`e[0m"
+									}
+									"InvalidPath"
+									{
+										return "`e[31;21m$name`e[0m❗"
+									}
+									"NoInputs"
+									{
+										return "`e[31;21m$name`e[0m❗"
+									}
+								}
+							</ScriptBlock>
+						</WideItem>
+					</WideEntry>
+					
+				</WideEntries>
+			</WideControl>
+		</View>
+		
+		<!-- job LIST -->
+		<View>
+			<Name>Job.List</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Job</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<ListControl>
+				<ListEntries>
+					
+					<!-- BASIC Formatting -->
+					<ListEntry>
+						<ListItems>
+							
+							<!-- The job name. -->
+							<ListItem>
+								<Label>Name</Label>
+								<ScriptBlock>
+									"`e[1;4m$($_.Name)`e[0m"
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The job overall state. -->
+							<ListItem>
+								<Label>Status</Label>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid`e[0m"
+										}
+										"InvalidPath"
+										{
+											return "`e[31mInvalid configuration file path!`e[0m"
+										}
+										"MismatchedVariables"
+										{
+											return "`e[31mMismatch between stored variables and definitions inside configuration file!`e[0m"
+										}
+										"UninitialisedVariables"
+										{
+											return "`e[31mUninitialised variables present!`e[0m"
+										}
+										"HasInputs"
+										{
+											return "`e[31mHas inputs!`e[0m"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The job configuration file location. -->
+							<ListItem>
+								<Label>Configuration File Path</Label>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"InvalidPath"
+										{
+											return "$($obj.Path) `e[4m(Does not point to a valid job configuration)!`e[0m"
+										}
+										Default
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The job variables. -->
+							<ListItem>
+								<Label>Variables</Label>
+								<ScriptBlock>
+									if ($_._Variables.Keys.Count -eq 0)
+									{
+										return "NULL"
+									}
+									else
+									{
+										foreach ($key in $_._Variables.Keys)
+										{
+											$string += "{$key = $($_._Variables[$key])}`n`r "
+										}
+										$string = $string.Remove($string.Length - 2)
+										return $string
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+						</ListItems>
+					</ListEntry>
+					
+					<!-- FANCY Formatting -->
+					<ListEntry>
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<SelectionSetName>Set.Job</SelectionSetName>
+								<ScriptBlock>
+									if ($env:WT_SESSION) {
+										return $true
+									}
+								</ScriptBlock>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<ListItems>
+						
+							<!-- The job name. -->
+							<ListItem>
+								<Label>Name</Label>
+								<ScriptBlock>
+									"`e[1;4m$($_.Name)`e[0m"
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The job overall state. -->
+							<ListItem>
+								<Label>Status</Label>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid ✅`e[0m"
+										}
+										"InvalidPath"
+										{
+											return "`e[31;21mInvalid configuration file path`e[0m❗"
+										}
+										"MismatchedVariables"
+										{
+											return "`e[31;21mMismatch between stored variables and definitions inside configuration file`e[0m❗"
+										}
+										"UninitialisedVariables"
+										{
+											return "`e[31;21mUninitialised variables present`e[0m❗"
+										}
+										"HasInputs"
+										{
+											return "`e[31;21mHas inputs`e[0m❗"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The job configuration file location. -->
+							<ListItem>
+								<Label>Configuration File Path</Label>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"InvalidPath"
+										{
+											return "$($obj.Path) `e[4m(Does not point to a valid job configuration)`e[0m❗"
+										}
+										Default
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+							<!-- The job variables. -->
+							<ListItem>
+								<Label>Variables</Label>
+								<ScriptBlock>
+									if ($_._Variables.Keys.Count -eq 0)
+									{
+										return "NULL"
+									}
+									else
+									{
+										foreach ($key in $_._Variables.Keys)
+										{
+											$string += "{$key = $($_._Variables[$key])}`n`r "
+										}
+										$string = $string.Remove($string.Length - 2)
+										return $string
+									}
+								</ScriptBlock>
+							</ListItem>
+							
+						</ListItems>
+					</ListEntry>
+					
+				</ListEntries>
+			</ListControl>
+		</View>
+		
+		<!-- job CUSTOM -->
+		<View>
+			<Name>Job.Custom</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Job</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<CustomControl>
+				<CustomEntries>
+					
+					<!-- BASIC Formatting -->
+					<CustomEntry>
+						<CustomItem>
+							<Frame>
+								<CustomItem>
+									<NewLine />
+									
+									<ExpressionBinding>
+										<ScriptBlock>
+											"class YoutubeDlJob"
+										</ScriptBlock>
+									</ExpressionBinding>
+									
+									<NewLine />
+									<Text>{</Text>
+									<NewLine />
+									
+									<Frame>
+										<LeftIndent>4</LeftIndent>
+										<CustomItem>
+											
+											<!-- The job name. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													"Name = $($_.Name)"
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The job overall state. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													"State = $($_.GetState())"
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The configuration file path. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													"Path = $($_.Path)"
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The inputs. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													if ($_._Variables.Keys.Count -eq 0)
+													{
+														"Variables = NULL"
+													}
+													else
+													{
+														$string = "Variables = "
+														foreach ($key in $_._Variables.Keys)
+														{
+															$string += "{$key = $($_._Variables[$key])}, "
+														}
+														$string = $string.Remove($string.Length - 2)
+														return $string
+													}
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+																						
+										</CustomItem>
+									</Frame>
+									
+									<Text>}</Text>
+									
+								</CustomItem>
+							</Frame>
+						</CustomItem>
+					</CustomEntry>
+					
+				</CustomEntries>
+			</CustomControl>
+		</View>
+		
+		<!-- job TABLE -->
+		<View>
+			<Name>Job.Table</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Job</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<TableControl>
+				<!-- The table headers. -->
+				<TableHeaders>
+					
+					<TableColumnHeader>
+						<Label>Name</Label>
+						<Width>20</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+					<TableColumnHeader>
+						<Label>Configuration File Path</Label>
+						<Width>40</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+					<TableColumnHeader>
+						<Label>Variables</Label>
+						<Width>40</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+					<TableColumnHeader>
+						<Label>Status</Label>
+						<Width>10</Width>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
+					
+				</TableHeaders>
+				
+				<!-- The table rows. -->
+				<TableRowEntries>
+					
+					<!-- BASIC Formatting -->
+					<TableRowEntry>
+						<TableColumnItems>
+							
+							<!-- The job name. -->
+							<TableColumnItem>
+								<PropertyName>Name</PropertyName>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The job configuration file path. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"InvalidPath"
+										{
+											return "`e[31mInvalid file!`e[0m"
+										}
+										Default
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The job variables. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									if ($_._Variables.Keys.Count -eq 0)
+									{
+										return "NULL"
+									}
+									else
+									{
+										foreach ($key in $_._Variables.Keys)
+										{
+											$string += "{$key = $($_._Variables[$key])}, "
+										}
+										$string = $string.Remove($string.Length - 2)
+										return $string
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The job state. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid`e[0m"
+										}
+										Default
+										{
+											return "`e[31mInvalid!`e[0m"
+										}
+									}
+								</ScriptBlock>
+							</TableColumnItem>
+							
+							
+						</TableColumnItems>
+					</TableRowEntry>
+					
+					<!-- FANCY Formatting -->
+					<TableRowEntry>
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<SelectionSetName>Set.Job</SelectionSetName>
+								<ScriptBlock>
+									if ($env:WT_SESSION) {
+										return $true
+									}
+								</ScriptBlock>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<TableColumnItems>
+							<!-- The job name. -->
+							<TableColumnItem>
+								<PropertyName>Name</PropertyName>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The job configuration file path. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									$obj = $_
+									switch ($_.GetState())
+									{
+										"InvalidPath"
+										{
+											return "`e[31;21mInvalid file!`e[0m"
+										}
+										Default
+										{
+											return "$($obj.Path)"
+										}
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The job variables. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									if ($_._Variables.Keys.Count -eq 0)
+									{
+										return "NULL"
+									}
+									else
+									{
+										foreach ($key in $_._Variables.Keys)
+										{
+											$string += "{$key = $($_._Variables[$key])}, "
+										}
+										$string = $string.Remove($string.Length - 2)
+										return $string
+									}
+								</ScriptBlock>
+								<Alignment>Left</Alignment>
+							</TableColumnItem>
+							
+							<!-- The job state. -->
+							<TableColumnItem>
+								<ScriptBlock>
+									switch ($_.GetState())
+									{
+										"Valid"
+										{
+											return "`e[32mValid ✅`e[0m"
+										}
+										Default
+										{
+											return "`e[31mInvalid`e[0m❗"
+										}
+									}
+								</ScriptBlock>
+							</TableColumnItem>
+							
+						</TableColumnItems>
+					</TableRowEntry>
+					
+				</TableRowEntries>
+			</TableControl>
+		</View>
+		
+		<!-- job WIDE -->
+		<View>
+			<Name>Job.Wide</Name>
+			<ViewSelectedBy>
+				<SelectionSetName>Set.Job</SelectionSetName>
+			</ViewSelectedBy>
+			
+			<WideControl>
+				<WideEntries>
+					
+					<!-- BASIC Formatting -->
+					<WideEntry>
+						<!-- The job name. -->
+						<WideItem>
+							<ScriptBlock>
+								$name = $_.Name
+								switch ($_.GetState()) {
+									"Valid"
+									{
+										return "`e[32m$name`e[0m"
+									}
+									"InvalidPath"
+									{
+										return "`e[31m$name!`e[0m"
+									}
+									"MismatchedVariables"
+									{
+										return "`e[31m$name!`e[0m"
+									}
+									"UninitialisedVariables"
+									{
+										return "`e[31m$name!`e[0m"
+									}
+									"HasInputs"
+									{
+										return "`e[31m$name!`e[0m"
+									}
+								}
+							</ScriptBlock>
+						</WideItem>
+					</WideEntry>
+					
+					<!-- FANCY Formatting -->
+					<WideEntry>
+						<EntrySelectedBy>
+							<SelectionCondition>
+								<SelectionSetName>Set.job</SelectionSetName>
+								<ScriptBlock>
+									if ($env:WT_SESSION) {
+										return $true
+									}
+								</ScriptBlock>
+							</SelectionCondition>
+						</EntrySelectedBy>
+						
+						<!-- The job name. -->
+						<WideItem>
+							<ScriptBlock>
+								$name = $_.Name
+								switch ($_.GetState()) {
+									"Valid"
+									{
+										return "`e[32m$name✅`e[0m"
+									}
+									"InvalidPath"
+									{
+										return "`e[31;21m$name`e[0m❗"
+									}
+									"MismatchedVariables"
+									{
+										return "`e[31;21m$name`e[0m❗"
+									}
+									"UninitialisedVariables"
+									{
+										return "`e[31;21m$name`e[0m❗"
+									}
+									"HasInputs"
+									{
+										return "`e[31;21m$name`e[0m❗"
+									}
+								}
+							</ScriptBlock>
+						</WideItem>
+					</WideEntry>
+					
+				</WideEntries>
+			</WideControl>
+		</View>
+		
+	</ViewDefinitions>
+	
+</Configuration>

@@ -37,7 +37,7 @@
 	# TypesToProcess = @('xml\ytdlWrapper.Types.ps1xml')
 	
 	# Format files (.ps1xml) to be loaded when importing this module
-	# FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
+	FormatsToProcess = @('xml\ytdlWrapper.Format.ps1xml')
 	
 	# Functions to export from this module
 	FunctionsToExport = @(
@@ -70,7 +70,7 @@
 		PSData = @{
 			
 			# Tags applied to this module. These help with module discovery in online galleries.
-			Tags = @("Windows", "Youtube", "Video", "Download", "youtube-dl", "PSEdition_Core")
+			Tags = @("Windows", "MacOS", "Linux", "youtube-dl", "Youtube", "Video", "Download", "Wrapper", "PSEdition_Core")
 			
 			# A URL to the license for this module.
 			LicenseUri = 'https://www.gnu.org/licenses/gpl-3.0.en.html'

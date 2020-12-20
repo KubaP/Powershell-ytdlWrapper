@@ -64,7 +64,7 @@ class YoutubeDlJob
 	static [boolean] HasInputs([string]$path)
 	{
 		# Check whether there are input definitions.
-		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -gt 0)
+		if ((Read-ConfigDefinitions -Path $path -InputDefinitions).Count -eq 0)
 		{
 			return $false
 		}
