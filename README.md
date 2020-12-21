@@ -6,14 +6,6 @@ This module is aimed at anyone who uses youtube-dl regularly, and wants a simple
 <br>
 
 [![Azure DevOps builds](https://img.shields.io/azure-devops/build/kubap999/02b7a52c-1cef-45ba-9f2a-3592446e6e14/17?label=Latest&logo=azure-pipelines)](https://dev.azure.com/KubaP999/ytdlWrapper/_build?definitionId=17)
-<!-- [![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/KubaP999/ProgramManager/7?logo=codecov&logoColor=white)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development)
-/\ Replace this one with a shields.io badge. Go to 'Code Coverage' -> 'Azure Code Coverage'
-    Fill out organisation/project/id values for the dev-ci pipeline
-    Style = 'flat'
-    logo = 'codecov'
-    logoColour = 'white'
-    
-   Turn the badge into a link by surrounding it in [] brackets, and then adding a (...) link afterwards which points to the azure dev ci pipeline page. -->
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ytdlWrapper?logo=powershell&logoColor=white)](https://www.powershellgallery.com/packages/ytdlWrapper)
 ![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ytdlWrapper)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](./LICENSE)
