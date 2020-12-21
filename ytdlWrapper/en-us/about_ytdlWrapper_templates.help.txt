@@ -1,123 +1,308 @@
 ﻿TOPIC
 	about_ytdlWrapper_templates
 	
+	
+	
 SHORT DESCRIPTION
-	Templates allow you to re-use a certain configuration but give it some flexibility with regards to
-	user input. With a template, you can specify the majority of the youtube-dl arguments but leave some
-	for the user to input at runtime. These may be arguments which often change.
+	Explains how to set-up and use ytdlWrapper templates.
 	
 	
-SETTING UP A TEMPLATE CONFIGURATION FILE
-	To use a youtube-dl configuration file as a template, it must have at least one input definition. The syntax
-	of an input definition looks like:
+	
+OVERVIEW
+ == A template is a youtube-dl configuration file which is almost-complete. This
+ 	file will not have everything hardcoded, so when it is executed using the
+ 	`Invoke-YoutubeDl` cmdlet, the user will be asked to give inputs to
+	"fill in" the file, and give youtube-dl.exe a valid configuration file.
+	
+ [!]Due to the nature of a template, the configuration file will not be a valid,
+	youtube-dl configuration file. It will only be valid once the template is
+	filled in when running the `Invoke-YoutubeDl` cmdlet.
+	
+	There is no limit to how many inputs a configuration file can have.
+	
+	
+	
+SETTING UP A CONFIGURATION FILE
+ == To use a youtube-dl configuration file as a template, it must have at least
+	one input defined. The syntax for an input definition is:
 	
 		i@{name}
 		
-		where name is a string which acts as a user-friendly description of this input.
-		and name can only contain the characters: a-zA-Z0-9_
-		name *cannot* contain a space!
+		'name' is a string which acts as a user-friendly identifier for this
+		input field. The string can only contain the characters: a-zA-Z0-9_
+	 [!]The string cannot contain a space.
+	 	
+		This input definition can go anywhere in the file. It is recommended
+		to place this definition after a youtube-dl flag, such as '-f' or
+		'--autonumber-start'.
 	
 	
-	An example of using an input definition in a proper configuration file:
-	
-		--write-thumbnail
-		--add-metadata
-	->	--autonumber-start i@{StartNumber}
-		-f 'best'
-		-o '~\download_folder\%(title)s'
-		'https://some/youtube/url'
-	
-		When this template is run, the command will ask the user to input a value for StartNumber.
-		There is a space between the --autonumber-start and the i@{} just like in a normal youtube-dl
-		configuration file.
-		
-	
-	The input definition gets replaced during runtime with the user given value. This means that if the
-	youtube-dl argument needs to be wrapped in ' ' single-quotes, so does the input definition. An example
-	of this is:
+ == An example of using an input to control the numbering:
 	
 		--write-thumbnail
 		--add-metadata
-		-f 'best'
-	->	-o 'i@{DownloadPath}'
-		'https://some/youtube/url'
+		--yes-playlist
+		--format "best"
+	 ->	--autonumber-start i@{Number}
 		
-		In a normal youtube-dl configuration file, the -o (output) filepath must be in ' ' quotes, so here,
-		the 'i@{}' is also wrapped within the ' ' quotes.
-		
-		
-	There is a special case for the url, since youtube-dl does not have a url argument. Instead the url argument
-	is a string wrapped in ' ' quotes which is at the end of the configuration file. Hence there is a special
-	case for this:
+		-o "~\downloads\%(title)s-%(autonumber)s.%(ext)s"
+		'https:\\youtube.com\some-id'
 	
+	When `Invoke-YoutubeDl` is run with this template, a parameter '-Number'
+	will be created and the user will set a value for this input using it.
+	
+	
+ == An example of using an input to control the format:
+		
 		--write-thumbnail
-		-f 'best'
-		-o '~\download_folder\%(title)s'
-	->	'i@{Url}'
+		--add-metadata
+		--yes-playlist
+	 -> --format "i@{Format}"
 		
-		Even though the input definition doesn't follow an argument, such as -f, this will get properly detected.
+		-o "~\downloads\%(title)s.%(ext)s"
+	    'https:\\youtube.com\some-id'
 		
+	When `Invoke-YoutubeDl` is ran with this template, a parameter '-Format'
+	will be created and the user will set a value for this input using it.
 	
-RUNNING A TEMPLATE
-	To run a template, run the Invoke-YoutubeDL command specifying a path to the template configuration file:
-	
-		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template.conf"
-		
-	Once you've typed in a valid path to a configuration file, a parameter for each input definition will be
-	available to pass a value in.
-	
-	For example, if the template has a i@{Url} definition, you would type:
-	
-		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template.conf" -Url "https://some/url"
-	
-	If you don't remember all the input definitions in the template, pressing Ctrl+Tab will show a list of all
-	valid parameters, and the input parameters will be at the top of said list.
+ [!]Notice that the input definition is wrapped inside of the " " double-quotes.
+	If youtube-dl expects a value within quotes, then the input definition must
+	also go within quotes, since only the i@{...} part is replaced with the 
+	user provided value.
 	
 	
-	A real-life example of this may be:
-	
-		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template_music.conf" -DownloadLocation "~/download/%(title)s"
-				-Url "https://youtube.com/some_video_id"
-		
-		This has two input definitions; DownloadLocation and Url
-	
-	
-EXAMPLE - Downloading music
+ == An example of using an input to specify the url:
+ 
+		--yes-playlist
+		--write-thumbnail
+		--format "best"
 
+		--output "~\downloads\%(title)s.%(ext)s"
+
+	 -> 'i@{Url}'
+		
+	When `Invoke-YoutubeDl` is ran with this template, a parameter '-Url'
+	will be created and the user will set a value for this input using it.
+	
+ [!]Notice that the input definition is not in front of a flag. This is an
+	exception. youtube-dl does not have a flag for the url. A url is a string
+	in quotes which goes at the end of a configuration file. In this case, the
+	module can detect that this is a valid url input.
+	
+	
+	
+CREATING A NEW TEMPLATE
+ == To create a template, run:
+	
+		PS C:\> New-YoutubeDlItem -Template -Name "music" -Path "~\music.conf"
+	
+	This command will create a new template named "music", and move the
+	configuration file to the module appdata folder.
+	
+	-Name
+		Specifies the name of the template to be created; must be unique.
+	
+	-Path
+		Specifies the path of the location of the configuration file to use.
+		
+	OPTIONAL PARAMETERS
+	
+	-DontMoveConfigurationFile
+		Prevents the configuration file from being moved from its original
+		location to a new location in the module appdata folder.
+	
+	-Force
+		Forces this cmdlet to create a template that writes over an existing
+		template. Even using this parameter, if the filesystem denies access to
+		the necessary files, this cmdlet will fail.
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+	
+INVOKING A TEMPLATE
+ == Assuming the configuration file has an input named 'Url'.
+ 	To execute a template, run:
+ 
+		PS C:\> Invoke-YoutubeDl -Template -Name "music" `
+				 -Url "https:\\youtube\some-id"
+	
+	This command will execute the "music" template, which has a 'Url' input
+	parameter.
+		
+	-Name
+		Specifies the name of the template to run.
+	 [!]This parameter autocompletes to existing template names.
+	
+ [!]DYNAMIC PARAMETERS
+	
+	For each input defined within the configuration file, a parameter with the
+	same name will be created, e.g. '-Url'.
+	
+	OPTIONAL PARAMETER
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+	
+RETRIEVING A TEMPLATE
+ == To retrieve the details of a template, run:
+	
+		PS C:\> Get-YoutubeDlItem -Template -Name "music"
+	
+	This command will retrieve the details of the template named "music", and 
+	print the details to the screen. The output of this cmdlet can be piped
+	to a number of other cmdlets in this module.
+	
+	-Name
+		Specifies the name of the template(s) to run.
+	 [!]This parameter autocompletes to existing template names.
+	
+	OPTIONAL PARAMETER
+	
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+	
+CHANGING THE PROPERTIES OF A TEMPLATE
+ == To change the path of the location of the configuration file, run:
+	
+		PS C:\> Set-YoutubeDlItem -Template -Name "music" `
+				 -Path "~\new_template.conf"
+	
+	This command will change the path of the location of the configuration
+	file from an previous old value to a new one for the template named
+	"music".
+	
+	The path can be changed to point to the new location of the configuration
+	file if it has been moved. Or it can be changed to a different file with
+	different input definitions.
+	
+	-Name
+		Specifies the name of the template to edit.
+	 [!]This parameter autocompletes to existing template names.
+	
+	-Path
+		Specifies the new path of the location of the configuration file to use.
+		
+	OPTIONAL PARAMETER
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+	
+REMOVING A TEMPLATE
+ == To delete a template, run:
+ 
+		PS C:\> Remove-YoutubeDlItem -Template -Name "music"
+		
+	This command will delete the template named "music".
+	
+	-Name
+		Specifies the name of the template(s) to run.
+	 [!]This parameter autocompletes to existing template names.
+	
+	OPTIONAL PARAMETER
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+	
+EXAMPLE
+ == An example of a template for downloading music.
+	
 	The configuration file:
 	
 		-f '(m4a)/(mp3)/bestaudio'
-		
 		-o 'i@{DownloadFolder}\%(title)s.mp3'
 		
 		'i@{Url}'
 	
+	Creating the template:
 	
-	The invocation:
+		PS C:\> New-YoutubeDlItem -Template -Name "music" -Path "~\music.conf"
 	
-		PS C:\> Invoke-YoutubeDL -ConfigPath "~/template_music.conf" -DownloadFolder "~\Music\dl\"
-				-Url "https://youtube.com/some_video_id"
+	Running the template:
+	
+		PS C:\> Invoke-YoutubeDl -Template -Name "music" `
+				 -DownloadFolder "~\Downloads\Music" `
+				 -Url "https:\\youtube.com\some-id"
 		
+	The result:
 		
-	This would download the video (as music only) to a path:
-		
-		~\Music\dl\some_video_title.mp3
+		~\Downloads\Music\video_title.mp3
+	
 	
 	
 OTHER
-	Using these templates effectively requires the use of youtube-dl features.
-	For example to only require the user to specify a folder, without having to worry about specifying
-	the name and extension of the file itself, such a input declaration would be needed:
-	
+ == Using these templates effectively requires the use of youtube-dl flags and
+	features. For example, to only require the user to specify a folder without
+	having to worry about specifying the name and extension of the file itself,
+	the input declaration would look like:
+		
 		-o 'i@{DownloadFolder}\%(title)s.mp3'
-				
-	In this case, the %(title)s tag is used. If you don't know these tags, or would like to see a full list
-	of available tags, see the youtube-dl documentation at: 
+		
+	In this case, the %(title)s tag is used. If you don't know these tags, or
+	would like to see a full list of available tags, see the youtube-dl
+	documentation at: 
 	
 	https://github.com/ytdl-org/youtube-dl#format-selection
 	
 	
-KEYWORDS
-	ytdlWrapper
 	
+KEYWORDS
+	ytdlWrapper_templates
+	ytdlWrapper
+	Youtube
+	Video
+	Download
+	Wrapper
 	

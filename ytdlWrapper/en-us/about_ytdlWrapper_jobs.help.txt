@@ -1,188 +1,387 @@
 ﻿TOPIC
 	about_ytdlWrapper_jobs
 	
+	
+	
 SHORT DESCRIPTION
-	Jobs allow you to re-use a certain configuration but give it the ability to persistently track some data
-	and use it within the configuration file. Once the youtube-dl binary finishes execution, a custom scriptblock
-	runs which generates a piece of data to store as a variable. When the job is run next time, this variable is
-	used as a youtube-dl argument which allows for more complex automation tasks.
+	Explains how to set-up and use ytdlWrapper jobs.
 	
 	
-SETTING UP A JOB CONFIGURATION FILE
-	To use a youtube-dl configuration file as a job, it must have at least one variable definition. The syntax
-	of a variable definition looks like:
+	
+OVERVIEW
+ == A job is a youtube-dl configuration file which is almost-complete. This file
+	will not have everything hardcoded, so when it is executed using the 
+	`Invoke-YoutubeDl` cmdlet, the stored variables will be used to "fill in"
+	the file, and give youtube-dl.exe a valid configuration file.
+	
+ [!]Due to the nature of a job, the configuration file will not be a valid
+	youtube-dl configuration file. It will only be valid once the job is filled
+	in when running the `Invoke-YoutubeDl` cmdlet.
+	
+	There is no limit to how many variables a configuration file can have. It
+	can even have zero.
+	
+	
+	
+SETTING UP A CONFIGURATION FILE
+ == To use a youtube-dl configuration file as a job, it may (commonly) have a
+	variable defined. The syntax for a variable definition is:
 	
 		v@{name}{start{scriptblock}end}
 		
-		where name is a string which acts as a user-friendly description of this variable.
-		and name can only contain the characters: a-zA-Z0-9_
-		name *cannot* contain a space!
-		
-		where scriptblock is a valid powershell scriptblock that *contains* a return value
-		
-		
-	An example of using a variable definition in a proper configuration file:
+		'name' is a string which acts as a user-friendly identifier for this
+		variable. The string can only contain the characters: a-zA-Z0-9_
+	 [!]The string cannot contain a space.
+	 
+	 	'scriptblock' is a valid powershell scriptblock written out in text. The
+		scriptblock must always return a value.
+	 [!]The module cannot check whether a scriptblock always returns a value, so
+	 	this is on the user to ensure is true.
 	
+ [!]There are input definitions for a template file. These **cannot** be used
+	within a configuration file designed for a job.
+	
+	
+ == An example of using a variable to auto number files:
+		
+	 -> --autonumber-start v@{Number}{start{
+			return "6"
+		}end}
 		--write-thumbnail
 		--add-metadata
-	->	--autonumber-start v@{StartNumber}{start{...}end}
-		-f 'bestvideo'
-		-o '~\download_folder\%(title)s'
-		'https://some/youtube/url'
+
+		-f 'best'
+		-o '~\downloads\%(autonumber)04d - %(title)s.%(ext)s'
+		'https:\\youtube.com\some-id'
 	
-		When this job is run, the command will retrieve the value for StartNumber from the database and use that
-		value for the --autonumber-start argument. Once the job finishes running, the scriptblock ... will execute
-		and whatever value it returns, will be stored in the database under the StartNumber key.
-		There is a space between the --autonumber-start and the v@{}{} just like in a normal youtube-dl
-		configuration file.
+	When `Invoke-YoutubeDl` is ran with this job, the 'Number' variable is set
+	a value from the previous run, and after youtube-dl finishes, the value is
+	set to 6.
 	
 	
-CREATING A JOB
-	For a job to be run, it must firstly be defined. Once you have created the configuration file, run:
 	
-		PS C:\> Add-YoutubeDLJob -Name "job_name" -ConfigPath "~/job.conf"
+CREATING A NEW JOB
+ == Assuming the configuration file has a variable named 'Number'.
+ 	To create a job, run:
+	
+		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path "~\archive.conf" `
+				 -Number "5"
+				
+	-Name
+		Specifies the name of the job to be created; must be unique.
+	
+	-Path
+		Specifies the path of the location of the configuration file to use.
+	
+ [!]DYNAMIC PARAMETERS
+	
+	For each variable defined within the configuration file, a parameter with
+	the same name will be created to set the variables initial value,
+	e.g. '-Number'.
 		
-	Once you've typed in a valid path to a configuration file, a parameter for each variable definition will be
-	available to pass in an initial value. This must be done since the scriptblock runs after youtube-dl is 
-	invoked, so the first time running the job, there would be no value.
+	OPTIONAL PARAMETERS
 	
-	For example, if the job has a v@{StartNumber}{} definition, you would type:
+	-DontMoveConfigurationFile
+		Prevents the configuration file from being moved from its original
+		location to a new location in the module appdata folder.
 	
-		PS C:\> Add-YoutubeDLJob -Name "job_name" -ConfigPath "~/job.conf" -StartNumber "0005"
+	-Force
+		Forces this cmdlet to create a job that writes over an existing job.
+		Even using this parameter, if the filesystem denies access to the
+		necessary files, this cmdlet will fail.
 	
-	If you don't remember all the variable definitions in the job, pressing Ctrl+Tab will show a list of all
-	valid parameters, and the variable parameters will be at the top of said list.
-	
-	Once a job is created, it can be run through youtube-dl.
-	
-	
-RUNNING A JOB
-	To run a job, run the Invoke-YoutubeDL command specifying a name of a job:
-	
-		PS C:\> Invoke-YoutubeDL -JobName "job_name"
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
 		
-	This is all that's necessary to run a job. Everything else, including the execution of scriptblocks, happens
-	automatically without requiring any user input.
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+	
+INVOKING A JOB
+ == To execute a job, run:
+	
+		PS C:\> Invoke-YoutubeDl -Job -Name "archive"
+		
+	This command will execute the "job" template.
+	
+	-Name
+		Specifies the name of the job(s) to run.
+	 [!]This parameter autocompletes to existing job names.
+	
+	OPTIONAL PARAMETER
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
 	
 	
 RETRIEVING A JOB
-	To retrieve information about a job, run the Get-YoutubeDLJob command specifying a job name:
+ == To retrieve the details of a job, run:
 	
-		PS C:\> Get-YoutubeDLJob -JobName "job_name"
+		PS C:\> Get-YoutubeDlItem -Job -Name "archive"
 	
-	This will return the job object and display it to screen. Alternatively, the object can be piped to other
-	commands which accept pipeline input.
+	This command will retrieve the details of the job named "archive", and 
+	print the details to the screen. The output of this cmdlet can be piped
+	to a number of other cmdlets in this module.
+	
+	-Name
+		Specifies the name of the job(s) to run.
+	 [!]This parameter autocompletes to existing job names.
+	 
+	OPTIONAL PARAMETER
+	
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
 	
 	
-CHANGING DATA IN A JOB
-	To change the configuration filepath for a job, run the Set-YoutubeDLJob command specifying a job name
-	and a new filepath:
 	
-		PS C:\> Set-YoutubeDLJob -JobName "job_name" -ConfigPath "~/new_job.conf"
+CHANGING THE PROPERTIES OF A JOB
+ == To change the path of the location of the configuration file, run:
+	
+		PS C:\> Set-YoutubeDlItem -Job -Name "archive" `
+				 -Path "~\new_template.conf"
+	
+	This command will change the path of the location of the configuration
+	file from an previous old value to a new one for the job named
+	"archive".
+	
+	The path can be changed to point to the new location of the configuration
+	file if it has been moved. Or it can be changed to a different file with
+	different input definitions.
+	
+	-Name
+		Specifies the name of the template to edit.
+	 [!]This parameter autocompletes to existing job names.
+	
+	-Path
+		Specifies the new path of the location of the configuration file to use.
 		
-	This will change the job's configuration filepath if the file was moved for example.
-	If the file was edited and a variable definition was added/removed, the job must be updated to stay in sync.
-	See the SYNCING A JOB section.
+	OPTIONAL PARAMETER
 	
-	To change a value of a variable for a job, run the Set-YoutubeDLJob command specifying a job name, the
-	variable name, and a new value:
-	
-		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Variable "StartNumber" -Value "999"
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
 		
-	This will change the job's StartNumber variable to have a new value of 999.
-	Once you've typed in a valid job name, the Variable parameter will have auto-completion values for all
-	variables the job has, so it's not necessary to remember them.
-	
-SYNCING A JOB
-	If the configuration file is changed, i.e. a variable definition is added or removed, then the job
-	must be synced up again to the configuration file, as the variable definitions in the file and in the job
-	will differ now. Example:
-	
-		job variables		variables in
-		(in database)		config file
-		-------------		------------
-		downloadpath		downloadpath
-		url					NEW_variable
-		title				url
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
 		
-	In this example, the 'title' variable must be removed from the job database, and a initial value for the new
-	'NEW_variable' variable must be provided so that the job can run properly.
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
 	
-	To sync the job to the configuration file, run the Set-YoutubeDLJob command with the -Update switch:
 	
-		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Update
+== To change the value of a stored variable, run:
+	
+		PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Variable "Number" `
+				 -Value "100"
+				 
+	This command will change the value of the 'Number' variable to the new
+	value of "100", for the job named "archive".
 		
-	Once you've typed in a valid name of a job, a parameter for each *new* variable definition will be
-	available to pass in an initial value.
+	-Name
+		Specifies the name of the template to edit.
+	 [!]This parameter autocompletes to existing job names.
 	
-	For example above, you would type:
+	-Variable
+		Specifies the name of the variable to change the value of for a job.
+	 [!]This parameter autocompletes to the defined variable names within the
+		job, once a valid '-Name' value is provided.
+		
+	-Value
+		Specifies the new value of the variable being changed.
+		
+	OPTIONAL PARAMETER
 	
-		PS C:\> Set-YoutubeDLJob -JobName "job_name" -Update -NEW_variable "some_value"	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
+	
+ ==	Assuming the configuration file has a new variable named 'Format'.
+ 	To update a job after changing the configuration file, run:
+	
+		PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Update `
+				 -Format "best"
+				 
+	This command will sync any changes between the configuration file and the
+	job named "archive". The configuration file has a new variable named
+	'Format', so an initial value is provided through the '-Format' parameter
+	(just like when using the `New-YoutubeDlItem` cmdlet).
+	
+	If there are any variables which have been removed from the configuration
+	file, these will be silently removed from the job as well.
+		
+	-Name
+		Specifies the name of the template to edit.
+	 [!]This parameter autocompletes to existing job names.
+	
+ [!]DYNAMIC PARAMETERS
+	
+	For each **new** variable defined within the configuration file, a parameter
+	with the same name will be created to set the variables initial value,
+	e.g. '-Format'.
+	
+	OPTIONAL PARAMETER
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
+	
 		
 	
-	(If the scriptblock is changed then this is not necessary, only if a variable name is added/edited/removed).
+REMOVING A JOB
+ == To delete a job, run:
 	
-	
-DELETING A JOB
-	To delete a job completely, run the Remove-YoutubeDLJob command specifying a job name:
-	
-		PS C:\> Remove-YoutubeDLJob -JobName "job_name"
+		PS C:\> Remove-YoutubeDlItem -Job -Name "archive"
 		
-	This will remove the job "job_name" from the database, but it will not delete the configuration file.
+	This command will delete the job named "archive".
+	
+	-Name
+		Specifies the name of the job(s) to run.
+	 [!]This parameter autocompletes to existing job names.
+	 
+	OPTIONAL PARAMETER
+	
+	-WhatIf
+		Shows what would happen if the cmdlet runs. The cmdlet does not run.
+		
+	-Confirm
+		Prompts you for confirmation before running any state-altering actions
+		in this cmdlet.
+		
+	<CommonParameters>
+        This cmdlet supports the common parameters: Verbose, Debug,
+        ErrorAction, ErrorVariable, WarningAction, WarningVariable,
+        OutBuffer, PipelineVariable, and OutVariable. For more information, see
+        about_CommonParameters (https://go.microsoft.com/fwlink/?LinkID=113216).
 	
 	
-EXAMPLE - Archiving a youtube channel playlist
+	
+EXAMPLE
+ == An example of an archiving job to download an ever-growing youtube playlist:
 
 	The configuration file:
 	
 		--playlist-reverse
-
 		--ignore-errors
-		
-		--autonumber-start v@{autonumber}{start{
-			$latestFile = (Get-ChildItem -Path "~\tmp" | Sort-Object -Property LastAccessTime -Descending)[0]
+		--autonumber-start v@{Number}{start{
+			$latestFile = (Get-ChildItem -Path "~\tmp" `
+				| Sort-Object -Property LastAccessTime -Descending)[0]
+			
 			$regex = [regex]::Matches($latestFile.Name, "(\d\d\d\d).*")
-			$highestNumber = [int]$regex.Groups[1].Value + 1
+			$newValue = [int]$regex.Groups[1].Value + 1
 	
-			return $highestNumber
+			return $newValue
 		}end}
-
 		--write-thumbnail
-
 		--add-metadata
-		
 		--download-archive ~\archive\downloaded_list.txt
 
 		-f '(mp4)[fps>30][height>=1080]+(m4a)/(mp4)[height>=1080]+(m4a)/best'
-		-o '~\tmp\%(autonumber)04d %(title)s'
-		'https://youtube.com/some_playlist_id'
+		-o '~\archive\%(autonumber)04d - %(title)s.%(ext)s'
+		'https:\\youtube.com\some-id'
 		
-		
-	The post-execution scriptblock:
+	Creating the job:
 	
-		Move-Item -Path ~\tmp\* -Destination ~\archive\
+		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path ~\archive.conf `
+				 -Number "5"
 		
-		
-	The invocation:
+	Running the job:
 	
-		PS C:\> Add-YoutubeDLJob -Name "archive_job" -ConfigPath ~\conf.txt -Autonumber "0001" 
-				-Scriptblock $scriptblock
-	
-		PS C:\> Invoke-YoutubeDL -JobName "archive_job"
-		
+		PS C:\> Invoke-YoutubeDl -Job -Name "archive"
 		
 	The result:
 	
 		In ~\archive\ :
 			downloaded_list.txt
-			0001 - a video.mp4
+			0005 - a video.mp4
 			0002 - another video.mp4
-			0003 - a further video.mp4
+			0007 - a further video.mp4
 			
-		The autonumber counter is now set to 0004, so the next time the job is run, the latest videos
-		will continue at 0004 onwards, keeping a consistent numbering scheme.
+		The 'Number' counter is now set to 0008, so the next time the job is
+		run, the latest videos will continue at 0008 onwards, continuing the
+		numbering scheme.
 		
+	The next time the job is ran, the new videos will continue with the
+	numbering sequence:
+	
+		In ~\archive\ :
+			downloaded_list.txt
+			0005 - a video.mp4
+			0002 - another video.mp4
+			0007 - a further video.mp4
+		 -> 0008 - new video.mp4
+		 -> 0009 - newer video.mp4
+	
+	
+	
+OTHER
+ == If a configuration file is changed and now mismatches what the job object
+	has stored, run the `Set-YoutubeDlItem` cmdlet with the '-Update' switch
+	to fix any discrepancies. Until this cmdlet is run, you will not be able to
+	execute this job.
+	
+	
+ == Using these jobs effectively requires the use of youtube-dl flags and 
+	features. If you dont know these features, see the youtube-dl documentation
+	at:
+	
+	https://github.com/ytdl-org/youtube-dl
+	
+	
+ == When writing the scriptblocks for a variable definition, you may find it
+	easier to write the scriptblock in an interactive powershell session
+	(which will also allow you to test the script), and then exporting it out
+	as a string to paste into the configuration file, using the
+	[Scriptblock]::ToString() method.
+	
+	
 	
 KEYWORDS
+	ytdlWrapper_jobs
 	ytdlWrapper
-	
+	Youtube
+	Video
+	Download
+	Wrapper
