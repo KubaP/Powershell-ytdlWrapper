@@ -118,6 +118,22 @@ class YoutubeDlJob
 		return $returnList
 	}
 	
+	[System.Collections.Generic.List[string]] GetMissingVariables()
+	{
+		# Get the variables which are missing in the object but present in 
+		# the configuration file.
+		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
+		return $configVariables | Where-Object { $this._Variables.Keys -notcontains $_ }
+	}
+	
+	[System.Collections.Generic.List[string]] GetUnnecessaryVariables()
+	{
+		# Get the variables which are present in the object but missing in
+		# the configuration file.
+		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
+		return $this._Variables.Keys | Where-Object { $configVariables -notcontains $_ }
+	}
+	
 	[System.Collections.Generic.List[string]] GetNullVariables()
 	{
 		# Get any variable names defined in this object which don't have a value.
