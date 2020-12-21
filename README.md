@@ -5,8 +5,7 @@ This module is aimed at anyone who uses youtube-dl regularly, and wants a simple
 
 <br>
 
-[![Azure DevOps builds](https://img.shields.io/azure-devops/build/KubaP999/3d9148d2-04d0-4835-b7cb-7bf89bdbf11b/7?label=latest%20build&logo=azure-pipelines)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development)
-/\ Replace this one with the badge option from the azure 'dev-ci' pipeline management page.
+[![Azure DevOps builds](https://img.shields.io/azure-devops/build/kubap999/02b7a52c-1cef-45ba-9f2a-3592446e6e14/17?label=Latest&logo=azure-pipelines)](https://dev.azure.com/KubaP999/ytdlWrapper/_build?definitionId=17)
 <!-- [![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/KubaP999/ProgramManager/7?logo=codecov&logoColor=white)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development)
 /\ Replace this one with a shields.io badge. Go to 'Code Coverage' -> 'Azure Code Coverage'
     Fill out organisation/project/id values for the dev-ci pipeline
@@ -16,15 +15,7 @@ This module is aimed at anyone who uses youtube-dl regularly, and wants a simple
     
    Turn the badge into a link by surrounding it in [] brackets, and then adding a (...) link afterwards which points to the azure dev ci pipeline page. -->
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ytdlWrapper?logo=powershell&logoColor=white)](https://www.powershellgallery.com/packages/ytdlWrapper)
-/\ Replace this one with a shields.io badge. Go to 'Version' -> 'Powershell Gallery (inc. pre-release)'
-    Fill out package name
-    logo = 'powershell'
-    logoColour = 'white'
-![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ProgramManager?logo=windows)
-/\ Replace this one with a shields.io badge. Go to 'Platform Support' -> 'Powershell Gallery'
-    Fill out package name
-    logo = 'windows'
-    logoColour = 'white'
+![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ytdlWrapper)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](./LICENSE)
 
 ### Table of Contents
