@@ -3,6 +3,22 @@
 	Reads all the definitions from a configuration file. Can specify between
 	input definitions, variable definitions, or variable scriptblocks.
 	
+.DESCRIPTION
+	Reads all the definitions from a configuration file. Can specify between
+	input definitions, variable definitions, or variable scriptblocks.
+	
+.PARAMETER Path
+	Path of the location of the configuration file.
+	
+.PARAMETER InputDefinitions
+	Get the input definitions names.
+	
+.PARAMETER VariableDefinitions
+	Get the variable definition names.
+	
+.PARAMETER VariableScriptblocks
+	Get the variable scriptblock strings.
+	
 .EXAMPLE
 	PS C:\> Read-ConfigDefinitions -Path ~\conf.txt -InputDefinitions
 	

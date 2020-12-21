@@ -2,6 +2,9 @@
 .SYNOPSIS
 	Reads all of the defined job objects.
 	
+.DESCRIPTION
+	Reads all of the defined job objects.
+	
 .EXAMPLE
 	PS C:\> $list = Read-Jobs
 	

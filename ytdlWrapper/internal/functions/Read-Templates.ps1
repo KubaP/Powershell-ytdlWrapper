@@ -2,6 +2,9 @@
 .SYNOPSIS
 	Reads all of the defined template objects.
 	
+.DESCRIPTION
+	Reads all of the defined template objects.
+	
 .EXAMPLE
 	PS C:\> $list = Read-Templates
 	

@@ -150,7 +150,8 @@ function Import-ModuleFile {
 # If this module file contains the compiled code, import that, but if it
 # doesn't, then import the individual files instead.
 $importIndividualFiles = $false
-if ("<was not built>" -eq '<was not built>') {
+if ("<was not built>" -eq '<was not built>')
+{
 	$importIndividualFiles = $true
 	Write-Debug "Module not built! Importing individual files."
 }
@@ -161,7 +162,8 @@ Write-Debug "Importing individual files: $importIndividualFiles"
 
 # If importing code as individual files, perform the importing.
 # Otherwise, the compiled code below will be loaded.
-if ($importIndividualFiles) {
+if ($importIndividualFiles)
+{
 	Write-Debug "!IMPORTING INDIVIDUAL FILES!"
 	
 	# Execute Pre-import actions.

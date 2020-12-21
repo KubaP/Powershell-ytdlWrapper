@@ -1,11 +1,17 @@
-<#
+﻿<#
 .SYNOPSIS
 	Starts the youtube-dl process and waits for it to finish.
 
+.DESCRIPTION
+	Starts the youtube-dl process and waits for it to finish.
+	
 .EXAMPLE
 	PS C:\> Invoke-Process -Path $path
 	
 	Starts youtube-dl specifying the configuration file at the $path location.
+	
+.PARAMETER Path
+	Path of the location of the configuration file to execute.
 	
 .INPUTS
 	None
