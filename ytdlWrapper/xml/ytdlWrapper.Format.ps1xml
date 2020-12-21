@@ -63,11 +63,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[31mInvalid configuration file path!`e[0m"
+											return "`e[31;4mInvalid configuration file path`e[0m`e[31m!`e[0m"
 										}
 										"NoInputs"
 										{
-											return "`e[31mHas no inputs!`e[0m"
+											return "`e[31;4mHas no inputs`e[0m`e[31m!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -86,11 +86,11 @@
 										}
 										"InvalidPath"
 										{
-											return "$($obj.Path) `e[4m(Does not point to a valid template configuration)`e[0m!"
+											return "`e[31m$($obj.Path)`e[0m `e[4m(Does not point to a valid file)`e[0m`e[31m!`e[0m"
 										}
 										"NoInputs"
 										{
-											return "$($obj.Path)"
+											return "`e[33m$($obj.Path)`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -115,11 +115,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[4mCannot read the inputs`e[0m!"
+											return "`e[90mCannot read the inputs`e[0m"
 										}
 										"NoInputs"
 										{
-											return "`e[4mThere are no defined inputs`e[0m!"
+											return "`e[90mThere are no defined inputs`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -186,11 +186,11 @@
 										}
 										"InvalidPath"
 										{
-											return "$($obj.Path) `e[4m(Does not point to a valid template configuration)`e[0m❗"
+											return "`e[31m$($obj.Path)`e[0m `e[4m(Does not point to a valid file)`e[0m❗"
 										}
 										"NoInputs"
 										{
-											return "$($obj.Path)"
+											return "`e[33m$($obj.Path)`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -215,11 +215,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[4mCannot read the inputs`e[0m❗"
+											return "`e[90mCannot read the inputs`e[0m"
 										}
 										"NoInputs"
 										{
-											return "`e[4mThere are no defined inputs`e[0m❗"
+											return "`e[90mThere are no defined inputs`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -345,7 +345,7 @@
 					
 					<TableColumnHeader>
 						<Label>Inputs</Label>
-						<Width>30</Width>
+						<Width>35</Width>
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 					
@@ -382,11 +382,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[31mInvalid file!`e[0m"
+											return "`e[31;4mInvalid file`e[0m`e[31m!`e[0m"
 										}
 										"NoInputs"
 										{
-											return "$($obj.Path)"
+											return "`e[33m$($obj.Path)!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -411,11 +411,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[31mCannot read inputs!`e[0m"
+											return "`e[33mCannot read inputs!`e[0m"
 										}
 										"NoInputs"
 										{
-											return "`e[31mNo defined inputs!`e[0m"
+											return "`e[31;4mNo defined inputs`e[0m`e[31m!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -479,11 +479,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[31;21mInvalid file!`e[0m"
+											return "`e[31;21mInvalid file`e[0m`e[31m!`e[0m"
 										}
 										"NoInputs"
 										{
-											return "$($obj.Path)"
+											return "`e[33m$($obj.Path)!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -508,11 +508,11 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[31;21mCannot read inputs!`e[0m"
+											return "`e[33mCannot read inputs!`e[0m"
 										}
 										"NoInputs"
 										{
-											return "`e[31;21mNo defined inputs!`e[0m"
+											return "`e[31;21mNo defined inputs`e[0m`e[31m!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -568,13 +568,9 @@
 									{
 										return "`e[32m$name`e[0m"
 									}
-									"InvalidPath"
+									Default
 									{
-										return "`e[31m$name!`e[0m"
-									}
-									"NoInputs"
-									{
-										return "`e[31m$name!`e[0m"
+										return "`e[31;4m$name`e[0m`e[31m!`e[0m"
 									}
 								}
 							</ScriptBlock>
@@ -603,11 +599,7 @@
 									{
 										return "`e[32m$name✅`e[0m"
 									}
-									"InvalidPath"
-									{
-										return "`e[31;21m$name`e[0m❗"
-									}
-									"NoInputs"
+									Default
 									{
 										return "`e[31;21m$name`e[0m❗"
 									}
@@ -654,19 +646,19 @@
 										}
 										"InvalidPath"
 										{
-											return "`e[31mInvalid configuration file path!`e[0m"
+											return "`e[31;4mInvalid configuration file path`e[0m`e[31m!`e[0m"
 										}
 										"MismatchedVariables"
 										{
-											return "`e[31mMismatch between stored variables and definitions inside configuration file!`e[0m"
+											return "`e[31;4mMismatch between stored variables and definitions inside configuration file`e[0m`e[31m!`e[0m"
 										}
 										"UninitialisedVariables"
 										{
-											return "`e[31mUninitialised variables present!`e[0m"
+											return "`e[31;4mUninitialised variables present`e[0m`e[31m!`e[0m"
 										}
 										"HasInputs"
 										{
-											return "`e[31mHas inputs!`e[0m"
+											return "`e[31;4mHas inputs`e[0m`e[31m!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -679,11 +671,23 @@
 									$obj = $_
 									switch ($_.GetState())
 									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
 										"InvalidPath"
 										{
-											return "$($obj.Path) `e[4m(Does not point to a valid job configuration)!`e[0m"
+											return "`e[31m$($obj.Path)`e[0m `e[4m(Does not point to a valid job configuration)`e[0m`e[31m!`e[0m"
 										}
-										Default
+										"HasInputs"
+										{
+											return "`e[33m$($obj.Path)`e[0m"
+										}
+										"MismatchedVariables"
+										{
+											return "$($obj.Path)"
+										}
+										"UninitialisedVariables"
 										{
 											return "$($obj.Path)"
 										}
@@ -701,12 +705,76 @@
 									}
 									else
 									{
-										foreach ($key in $_._Variables.Keys)
+										$obj = $_
+										switch ($_.GetState())
 										{
-											$string += "{$key = $($_._Variables[$key])}`n`r "
+											"Valid"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"InvalidPath"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "`e[90m$string`e[0m`e[31m?`e[0m"
+											}
+											"HasInputs"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"MismatchedVariables"
+											{
+												$missingVars = $obj.GetMissingVariables()
+												$oldVars = $obj.GetUnnecessaryVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($oldVars -contains $key)
+													{
+														$string += "`e[90m{$key = $($obj._Variables[$key])}`e[0m`e[31mX`e[0m`n`r"
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}`n`r"
+													}
+												}
+												foreach ($key in $missingVars)
+												{
+													$string += "`e[33m{$key = NULL}`e[0m`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"UninitialisedVariables"
+											{
+												$nullVars = $obj.GetNullVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($nullVars -contains $key)
+													{
+														$string += "`e[33m{$key = NULL}`e[0m`n`r"
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}`n`r"
+													}
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
 										}
-										$string = $string.Remove($string.Length - 2)
-										return $string
 									}
 								</ScriptBlock>
 							</ListItem>
@@ -774,11 +842,23 @@
 									$obj = $_
 									switch ($_.GetState())
 									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
 										"InvalidPath"
 										{
-											return "$($obj.Path) `e[4m(Does not point to a valid job configuration)`e[0m❗"
+											return "`e[31m$($obj.Path)`e[0m `e[4m(Does not point to a valid job configuration)`e[0m❗"
 										}
-										Default
+										"HasInputs"
+										{
+											return "`e[33m$($obj.Path)`e[0m"
+										}
+										"MismatchedVariables"
+										{
+											return "$($obj.Path)"
+										}
+										"UninitialisedVariables"
 										{
 											return "$($obj.Path)"
 										}
@@ -796,12 +876,76 @@
 									}
 									else
 									{
-										foreach ($key in $_._Variables.Keys)
+										$obj = $_
+										switch ($_.GetState())
 										{
-											$string += "{$key = $($_._Variables[$key])}`n`r "
+											"Valid"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"InvalidPath"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "`e[90m$string`e[0m❓"
+											}
+											"HasInputs"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"MismatchedVariables"
+											{
+												$missingVars = $obj.GetMissingVariables()
+												$oldVars = $obj.GetUnnecessaryVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($oldVars -contains $key)
+													{
+														$string += "`e[90;9m{$key = $($obj._Variables[$key])}`e[0m❌`n`r"
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}`n`r"
+													}
+												}
+												foreach ($key in $missingVars)
+												{
+													$string += "`e[33m{$key = NULL}`e[0m`n`r"
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"UninitialisedVariables"
+											{
+												$nullVars = $obj.GetNullVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($nullVars -contains $key)
+													{
+														$string += "`e[33m{$key = NULL}`e[0m`n`r"
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}`n`r"
+													}
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
 										}
-										$string = $string.Remove($string.Length - 2)
-										return $string
 									}
 								</ScriptBlock>
 							</ListItem>
@@ -928,7 +1072,7 @@
 					
 					<TableColumnHeader>
 						<Label>Variables</Label>
-						<Width>40</Width>
+						<Width>45</Width>
 						<Alignment>Left</Alignment>
 					</TableColumnHeader>
 					
@@ -959,11 +1103,23 @@
 									$obj = $_
 									switch ($_.GetState())
 									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
 										"InvalidPath"
 										{
-											return "`e[31mInvalid file!`e[0m"
+											return "`e[31m$($obj.Path)`e[0m`e[31m!`e[0m"
 										}
-										Default
+										"HasInputs"
+										{
+											return "`e[33m$($obj.Path)`e[0m"
+										}
+										"MismatchedVariables"
+										{
+											return "$($obj.Path)"
+										}
+										"UninitialisedVariables"
 										{
 											return "$($obj.Path)"
 										}
@@ -981,12 +1137,76 @@
 									}
 									else
 									{
-										foreach ($key in $_._Variables.Keys)
+										$obj = $_
+										switch ($_.GetState())
 										{
-											$string += "{$key = $($_._Variables[$key])}, "
+											"Valid"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"InvalidPath"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "`e[90m$string`e[0m"
+											}
+											"HasInputs"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"MismatchedVariables"
+											{
+												$missingVars = $obj.GetMissingVariables()
+												$oldVars = $obj.GetUnnecessaryVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($oldVars -contains $key)
+													{
+														$string += "`e[90;9m{$key = $($obj._Variables[$key])}`e[0m, "
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}, "
+													}
+												}
+												foreach ($key in $missingVars)
+												{
+													$string += "`e[33m{$key = NULL}`e[0m, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"UninitialisedVariables"
+											{
+												$nullVars = $obj.GetNullVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($nullVars -contains $key)
+													{
+														$string += "`e[33m{$key = NULL}`e[0m, "
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}, "
+													}
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
 										}
-										$string = $string.Remove($string.Length - 2)
-										return $string
 									}
 								</ScriptBlock>
 								<Alignment>Left</Alignment>
@@ -1003,7 +1223,7 @@
 										}
 										Default
 										{
-											return "`e[31mInvalid!`e[0m"
+											return "`e[31mInvalid`e[0m`e[31m!`e[0m"
 										}
 									}
 								</ScriptBlock>
@@ -1039,11 +1259,23 @@
 									$obj = $_
 									switch ($_.GetState())
 									{
+										"Valid"
+										{
+											return "$($obj.Path)"
+										}
 										"InvalidPath"
 										{
-											return "`e[31;21mInvalid file!`e[0m"
+											return "`e[31m$($obj.Path)`e[0m`e[31m!`e[0m"
 										}
-										Default
+										"HasInputs"
+										{
+											return "`e[33m$($obj.Path)`e[0m"
+										}
+										"MismatchedVariables"
+										{
+											return "$($obj.Path)"
+										}
+										"UninitialisedVariables"
 										{
 											return "$($obj.Path)"
 										}
@@ -1061,12 +1293,76 @@
 									}
 									else
 									{
-										foreach ($key in $_._Variables.Keys)
+										$obj = $_
+										switch ($_.GetState())
 										{
-											$string += "{$key = $($_._Variables[$key])}, "
+											"Valid"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"InvalidPath"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "`e[90m$string`e[0m"
+											}
+											"HasInputs"
+											{
+												foreach ($key in $obj._Variables.Keys)
+												{
+													$string += "{$key = $($obj._Variables[$key])}, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"MismatchedVariables"
+											{
+												$missingVars = $obj.GetMissingVariables()
+												$oldVars = $obj.GetUnnecessaryVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($oldVars -contains $key)
+													{
+														$string += "`e[90;9m{$key = $($obj._Variables[$key])}`e[0m, "
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}, "
+													}
+												}
+												foreach ($key in $missingVars)
+												{
+													$string += "`e[33m{$key = NULL}`e[0m, "
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
+											"UninitialisedVariables"
+											{
+												$nullVars = $obj.GetNullVariables()
+												foreach ($key in $obj._Variables.Keys)
+												{
+													if ($nullVars -contains $key)
+													{
+														$string += "`e[33m{$key = NULL}`e[0m, "
+													}
+													else
+													{
+														$string += "{$key = $($obj._Variables[$key])}, "
+													}
+												}
+												$string = $string.Remove($string.Length - 2)
+												return "$string"
+											}
 										}
-										$string = $string.Remove($string.Length - 2)
-										return $string
 									}
 								</ScriptBlock>
 								<Alignment>Left</Alignment>
@@ -1117,21 +1413,9 @@
 									{
 										return "`e[32m$name`e[0m"
 									}
-									"InvalidPath"
+									Default
 									{
-										return "`e[31m$name!`e[0m"
-									}
-									"MismatchedVariables"
-									{
-										return "`e[31m$name!`e[0m"
-									}
-									"UninitialisedVariables"
-									{
-										return "`e[31m$name!`e[0m"
-									}
-									"HasInputs"
-									{
-										return "`e[31m$name!`e[0m"
+										return "`e[31;4m$name`e[0m`e[31m!`e[0m"
 									}
 								}
 							</ScriptBlock>
@@ -1142,7 +1426,7 @@
 					<WideEntry>
 						<EntrySelectedBy>
 							<SelectionCondition>
-								<SelectionSetName>Set.job</SelectionSetName>
+								<SelectionSetName>Set.Job</SelectionSetName>
 								<ScriptBlock>
 									if ($env:WT_SESSION) {
 										return $true
@@ -1160,19 +1444,7 @@
 									{
 										return "`e[32m$name✅`e[0m"
 									}
-									"InvalidPath"
-									{
-										return "`e[31;21m$name`e[0m❗"
-									}
-									"MismatchedVariables"
-									{
-										return "`e[31;21m$name`e[0m❗"
-									}
-									"UninitialisedVariables"
-									{
-										return "`e[31;21m$name`e[0m❗"
-									}
-									"HasInputs"
+									Default
 									{
 										return "`e[31;21m$name`e[0m❗"
 									}
