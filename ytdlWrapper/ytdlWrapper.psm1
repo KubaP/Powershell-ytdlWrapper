@@ -2,8 +2,8 @@
 $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$ModuleRoot\ytdlWrapper.psd1").ModuleVersion
 $script:Folder = "$env:APPDATA\Powershell\ytdlWrapper"
-$script:TemplateData = "$env:APPDATA\Powershell\ytdlWrapper\template-database.xml"
-$script:JobData = "$env:APPDATA\Powershell\ytdlWrapper\job-database.xml"
+$script:TemplateData = "$env:APPDATA\Powershell\ytdlWrapper\template-database.$($script:ModuleVersion).xml"
+$script:JobData = "$env:APPDATA\Powershell\ytdlWrapper\job-database.$($script:ModuleVersion).xml"
 
 # For the debug output to be displayed, $DebugPreference must be set
 # to 'Continue' within the current session.
@@ -18,10 +18,16 @@ Write-Debug "Data Folder: $Folder"
 if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ignore))
 {
 	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell\ytdlWrapper" -Force -ErrorAction Stop
-	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Templates" -Force -ErrorAction Stop
-	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Jobs" -Force -ErrorAction Stop
-	Write-Debug "Created database folders!"
 }
+if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper\Templates" -ErrorAction Ignore))
+{
+	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Templates" -Force -ErrorAction Stop
+}
+if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper\Jobs" -ErrorAction Ignore))
+{
+	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Jobs" -Force -ErrorAction Stop
+}
+Write-Debug "Created database folders!"
 
 if ($null -eq (Get-Command youtube-dl.exe -ErrorAction SilentlyContinue))
 {
