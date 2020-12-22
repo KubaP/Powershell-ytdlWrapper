@@ -2,8 +2,8 @@
 $script:ModuleRoot = $PSScriptRoot
 $script:ModuleVersion = (Import-PowerShellDataFile -Path "$ModuleRoot\ytdlWrapper.psd1").ModuleVersion
 $script:Folder = "$env:APPDATA\Powershell\ytdlWrapper"
-$script:TemplateData = "$env:APPDATA\Powershell\ytdlWrapper\template-database.$($script:ModuleVersion).xml"
-$script:JobData = "$env:APPDATA\Powershell\ytdlWrapper\job-database.$($script:ModuleVersion).xml"
+$script:TemplateData = "$env:APPDATA\Powershell\ytdlWrapper\template-database.$ModuleVersion.xml"
+$script:JobData = "$env:APPDATA\Powershell\ytdlWrapper\job-database.$ModuleVersion.xml"
 
 # For the debug output to be displayed, $DebugPreference must be set
 # to 'Continue' within the current session.
@@ -17,15 +17,15 @@ Write-Debug "Data Folder: $Folder"
 # Create the module data-storage folder if it doesn't exist.
 if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper" -ErrorAction Ignore))
 {
-	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell\ytdlWrapper" -Force -ErrorAction Stop
+	New-Item -ItemType Directory -Path "$env:APPDATA" -Name "Powershell\ytdlWrapper" -Force -ErrorAction Stop -WhatIf:$false -Confirm:$false
 }
-if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper\Templates" -ErrorAction Ignore))
+if (-not (Test-Path -Path "$Folder\Templates" -ErrorAction Ignore))
 {
-	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Templates" -Force -ErrorAction Stop
+	New-Item -ItemType Directory -Path "$Folder" -Name "Templates" -Force -ErrorAction Stop -WhatIf:$false -Confirm:$false
 }
-if (-not (Test-Path -Path "$env:APPDATA\Powershell\ytdlWrapper\Jobs" -ErrorAction Ignore))
+if (-not (Test-Path -Path "$Folder\Jobs" -ErrorAction Ignore))
 {
-	New-Item -ItemType Directory -Path "$env:APPDATA\Powershell\ytdlWrapper" -Name "Jobs" -Force -ErrorAction Stop
+	New-Item -ItemType Directory -Path "$Folder" -Name "Jobs" -Force -ErrorAction Stop -WhatIf:$false -Confirm:$false
 }
 Write-Debug "Created database folders!"
 
@@ -183,13 +183,44 @@ if ($importIndividualFiles)
 	
 	# Execute Post-import actions.
 	. Import-ModuleFile -Path "$ModuleRoot\internal\postimport.ps1"
+}
+else
+{
+	Write-Debug "!LOADING COMPILED CODE!"
 	
-	# End execution here, do not load compiled code below (if there is any).
-	return
+	#region Load compiled code
+	"<compile code into here>"
+	#endregion Load compiled code
 }
 
-Write-Debug "!LOADING COMPILED CODE!"
+# TEMPLATE DATA MIGRATION
+# -----------------------
+Write-Debug "Checking for template databse migration"
+$templateDatabaseVersion = [Regex]::Match((Get-Item -Path "$Folder\template-database.*.xml" -ErrorAction Ignore), ".*?ytdlWrapper\\template-database.(.*).xml").Groups[1].Value
+if ($templateDatabaseVersion -eq "0.2.0")
+{
+	Write-Debug "`e[4mDetected database version 0.2.0!`e[0m"
+	Rename-Item -Path "$Folder\template-database.0.2.0.xml" -NewName "template-database.0.2.1.xml" -Force -WhatIf:$false -Confirm:$false
+}
 
-#region Load compiled code
-"<compile code into here>"
-#endregion Load compiled code
+# JOB DATA MIGRATION
+# ------------------
+Write-Debug "Checking for job database migration"
+$jobDatabaseVersion = [Regex]::Match((Get-Item -Path "$Folder\job-database.*.xml" -ErrorAction Ignore), ".*?ytdlWrapper\\job-database.(.*).xml").Groups[1].Value
+if ($jobDatabaseVersion -eq "0.2.0")
+{
+	Write-Debug "`e[4mDetected database version 0.2.0!`e[0m"
+	$jobList = New-Object -TypeName System.Collections.Generic.List[YoutubeDlJob]
+	$xmlData = Import-Clixml -Path "$Folder\job-database.$jobDatabaseVersion.xml"
+	foreach ($item in $xmlData)
+	{
+		if ($item.pstypenames[0] -eq "Deserialized.YoutubeDlJob")
+		{
+			$job = [YoutubeDlJob]::new($item.Name, $item.Path, $item._Variables, $null, $null)
+			$jobList.Add($job)
+		}
+	}
+	
+	Export-Clixml -Path "$Folder\job-database.0.2.1.xml" -InputObject $jobList -WhatIf:$false -Confirm:$false | Out-Null
+	Remove-Item -Path "$Folder\job-database.$jobDatabaseVersion.xml" -Force -WhatIf:$false -Confirm:$false | Out-Null
+}

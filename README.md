@@ -5,30 +5,12 @@ This module is aimed at anyone who uses youtube-dl regularly, and wants a simple
 
 <br>
 
-[![Azure DevOps builds](https://img.shields.io/azure-devops/build/KubaP999/3d9148d2-04d0-4835-b7cb-7bf89bdbf11b/7?label=latest%20build&logo=azure-pipelines)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development)
-/\ Replace this one with the badge option from the azure 'dev-ci' pipeline management page.
-<!-- [![Azure DevOps coverage](https://img.shields.io/azure-devops/coverage/KubaP999/ProgramManager/7?logo=codecov&logoColor=white)](https://dev.azure.com/KubaP999/ProgramManager/_build/latest?definitionId=7&branchName=development)
-/\ Replace this one with a shields.io badge. Go to 'Code Coverage' -> 'Azure Code Coverage'
-    Fill out organisation/project/id values for the dev-ci pipeline
-    Style = 'flat'
-    logo = 'codecov'
-    logoColour = 'white'
-    
-   Turn the badge into a link by surrounding it in [] brackets, and then adding a (...) link afterwards which points to the azure dev ci pipeline page. -->
+[![Azure DevOps builds](https://img.shields.io/azure-devops/build/kubap999/02b7a52c-1cef-45ba-9f2a-3592446e6e14/17?label=Latest&logo=azure-pipelines)](https://dev.azure.com/KubaP999/ytdlWrapper/_build?definitionId=17)
 [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/ytdlWrapper?logo=powershell&logoColor=white)](https://www.powershellgallery.com/packages/ytdlWrapper)
-/\ Replace this one with a shields.io badge. Go to 'Version' -> 'Powershell Gallery (inc. pre-release)'
-    Fill out package name
-    logo = 'powershell'
-    logoColour = 'white'
-![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ProgramManager?logo=windows)
-/\ Replace this one with a shields.io badge. Go to 'Platform Support' -> 'Powershell Gallery'
-    Fill out package name
-    logo = 'windows'
-    logoColour = 'white'
+![PowerShell Gallery Platform](https://img.shields.io/powershellgallery/p/ytdlWrapper)
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](./LICENSE)
 
 ### Table of Contents
-
 1. [Getting Started](#getting-started)
 2. [Basic Usage](#basic-usage)
 3. [Information & Features](#information--features)
@@ -80,7 +62,7 @@ Get-Help <COMMAND NAME> -Full
 ### Extra features
 #### Aliases
 The commands in this module have default aliases:
-|Command	          |Alias |
+|Cmdlet  	          |Alias |
 |---------------------|------|
 |New-YoutubeDlItem    | nydl |
 |Get-YoutubeDlItem    | gydl |
@@ -89,7 +71,7 @@ The commands in this module have default aliases:
 |Invoke-YoutubeDl     | iydl |
 
 #### Tab completion
-The `-Name` parameter supports tab-completion of valid **existing** `Template` or `Job` names in the following commands:
+The `-Name`/`-Names` parameter supports tab-completion of valid **existing** `Template` or `Job` names in the following commands:
 - `Get-YoutubeDlItem`
 - `Set-YoutubeDlItem`
 - `Remove-YoutubeDlItem`
@@ -108,7 +90,7 @@ Use `-Confirm` to ask for a prompt for every state-altering change.
 
 #### Formatting
 The `[YoutubeDlTemplate]` and `[YoutubeDlJob]` objects within this module have custom formatting rules for all views. Simply pipe the output of the `Get-YoutubeDlItem` command to one of:
-| Command       | Alias |
+| Cmdlet        | Alias |
 |---------------|-------|
 | Format-List   |  fl   |
 | Format-Table  |  ft   |
@@ -119,13 +101,13 @@ The `Format-Custom` & `Format-List` views contain the largest amount of informat
 
 ⚠This module supports `Fancy` formatting (using colours and emoijs) for enhanced readability. This *only* works within the **Windows Terminal** at the moment (I've not tested this on other terminal emulators, but if you know that they support these extra features then let me know). The example below shows the enhanced formatting.
 
-![Example](./img.png)
+![Example](./example.png)
 
 ## Build Instructions
 #### Prerequisites
 Install the following:
 - Powershell Core 7.0.0+
-- Pester 4.10.1
+- Pester **4.10.1**
 - PSScriptAnalyzer 1.18.0+
 
 #### Clone the git repo
@@ -134,7 +116,6 @@ git clone https://github.com/KubaP/Powershell-ytdlWrapper.git
 ```
 
 #### Run the build scripts
-
 Navigate to the root repository folder and run the following commands:
 ```powershell
 & .\build\vsts-prerequisites.ps1

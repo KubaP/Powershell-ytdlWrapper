@@ -68,7 +68,7 @@ function Read-ConfigDefinitions
 	# Read in the config file as a single string.
 	$configFilestream = Get-Content -Path $Path -Raw
 	$definitionList = New-Object -TypeName System.Collections.Generic.List[string]
-	$hashList = New-Object -TypeName hashtable
+	$hashList = @{}
 	
 	if ($InputDefinitions -eq $true)
 	{

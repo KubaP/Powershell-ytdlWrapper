@@ -11,14 +11,19 @@ class YoutubeDlJob
 {
 	[string]$Name
 	[string]$Path
-	hidden [hashtable]$_Variables
+	[hashtable]$_Variables
+	[nullable[datetime]]$_lastExecutionTime
+	[nullable[boolean]]$_lastExecutionSuccess
 	
 	# Constructor.
-	YoutubeDlJob ([string]$name, [string]$path, [hashtable]$variableValues)
+	YoutubeDlJob ([string]$name, [string]$path, [hashtable]$variableValues, [nullable[datetime]]$lastExecutionTime, 
+		[nullable[boolean]]$lastExecutionSuccess)
 	{
 		$this.Name = $name
 		$this.Path = $path
 		$this._Variables = $variableValues
+		$this._lastExecutionTime = $lastExecutionTime
+		$this._lastExecutionSuccess = $lastExecutionSuccess
 	}
 		
 	[JobState] GetState()
@@ -149,6 +154,12 @@ class YoutubeDlJob
 		return $returnList
 	}
 	
+	[hashtable] GetScriptblocks()
+	{
+		# Get the scriptblock hashtable.
+		return Read-ConfigDefinitions -Path $this.Path -VariableScriptblocks
+	}
+	
 	[string] GetCompletedConfigFile()
 	{
 		# Go through all variable definitions and substitute the stored variable
@@ -160,26 +171,5 @@ class YoutubeDlJob
 		}
 		
 		return $configFilestream
-	}
-	
-	[string] UpdateVariableValues()
-	{
-		$scriptblockDefinitions = Read-ConfigDefinitions -Path $this.Path -VariableScriptblocks
-		# Iterate through all scriptblock definitions and execute them.
-		foreach ($key in $scriptblockDefinitions.Keys)
-		{
-			$scriptblock = [scriptblock]::Create($scriptblockDefinitions[$key])
-			$returnResult = Invoke-Command -ScriptBlock $scriptblock
-			# If no value is returned, return the variable name to the invocation
-			# cmdlet to warn the user.
-			if ($null -eq $returnResult)
-			{
-				return $key
-			}
-			
-			$this._Variables[$key] = $returnResult
-		}
-		
-		return $null
 	}
 }

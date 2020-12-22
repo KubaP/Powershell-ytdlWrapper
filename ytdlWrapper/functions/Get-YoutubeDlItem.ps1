@@ -97,7 +97,7 @@ function Get-YoutubeDlItem
 		{
 			New-Object -TypeName System.Collections.Generic.List[YoutubeDlTemplate]
 		}
-		else
+		elseif ($Job)
 		{
 			New-Object -TypeName System.Collections.Generic.List[YoutubeDlJob]
 		}
@@ -107,7 +107,7 @@ function Get-YoutubeDlItem
 		{
 			Read-Templates
 		}
-		else
+		elseif ($Job)
 		{
 			Read-Jobs
 		}

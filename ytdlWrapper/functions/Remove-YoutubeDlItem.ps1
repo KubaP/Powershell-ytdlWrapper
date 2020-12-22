@@ -83,7 +83,7 @@ function Remove-YoutubeDlItem
 		{
 			Read-Templates
 		}
-		else
+		elseif ($Job)
 		{
 			Read-Jobs
 		}
@@ -93,7 +93,7 @@ function Remove-YoutubeDlItem
 		{
 			$script:TemplateData
 		}
-		else
+		elseif ($Job)
 		{
 			$script:JobData
 		}

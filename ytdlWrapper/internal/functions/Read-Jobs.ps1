@@ -38,7 +38,7 @@ function Read-Jobs
 			# new identical copies from scratch.
 			if ($item.pstypenames[0] -eq "Deserialized.YoutubeDlJob")
 			{
-				$job = [YoutubeDlJob]::new($item.Name, $item.Path, $item._Variables)
+				$job = [YoutubeDlJob]::new($item.Name, $item.Path, $item._Variables, $item._lastExecutionTime, $item._lastExecutionSuccess)
 				$jobList.Add($job)
 			}
 		}
