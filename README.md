@@ -11,7 +11,6 @@ This module is aimed at anyone who uses youtube-dl regularly, and wants a simple
 [![License](https://img.shields.io/badge/license-GPLv3-blue)](./LICENSE)
 
 ### Table of Contents
-
 1. [Getting Started](#getting-started)
 2. [Basic Usage](#basic-usage)
 3. [Information & Features](#information--features)
@@ -63,7 +62,7 @@ Get-Help <COMMAND NAME> -Full
 ### Extra features
 #### Aliases
 The commands in this module have default aliases:
-|Command	          |Alias |
+|Cmdlet  	          |Alias |
 |---------------------|------|
 |New-YoutubeDlItem    | nydl |
 |Get-YoutubeDlItem    | gydl |
@@ -72,7 +71,7 @@ The commands in this module have default aliases:
 |Invoke-YoutubeDl     | iydl |
 
 #### Tab completion
-The `-Name` parameter supports tab-completion of valid **existing** `Template` or `Job` names in the following commands:
+The `-Name`/`-Names` parameter supports tab-completion of valid **existing** `Template` or `Job` names in the following commands:
 - `Get-YoutubeDlItem`
 - `Set-YoutubeDlItem`
 - `Remove-YoutubeDlItem`
@@ -91,7 +90,7 @@ Use `-Confirm` to ask for a prompt for every state-altering change.
 
 #### Formatting
 The `[YoutubeDlTemplate]` and `[YoutubeDlJob]` objects within this module have custom formatting rules for all views. Simply pipe the output of the `Get-YoutubeDlItem` command to one of:
-| Command       | Alias |
+| Cmdlet        | Alias |
 |---------------|-------|
 | Format-List   |  fl   |
 | Format-Table  |  ft   |
@@ -102,13 +101,13 @@ The `Format-Custom` & `Format-List` views contain the largest amount of informat
 
 ⚠This module supports `Fancy` formatting (using colours and emoijs) for enhanced readability. This *only* works within the **Windows Terminal** at the moment (I've not tested this on other terminal emulators, but if you know that they support these extra features then let me know). The example below shows the enhanced formatting.
 
-![Example](./img.png)
+![Example](./example.png)
 
 ## Build Instructions
 #### Prerequisites
 Install the following:
 - Powershell Core 7.0.0+
-- Pester 4.10.1
+- Pester **4.10.1**
 - PSScriptAnalyzer 1.18.0+
 
 #### Clone the git repo
@@ -117,7 +116,6 @@ git clone https://github.com/KubaP/Powershell-ytdlWrapper.git
 ```
 
 #### Run the build scripts
-
 Navigate to the root repository folder and run the following commands:
 ```powershell
 & .\build\vsts-prerequisites.ps1

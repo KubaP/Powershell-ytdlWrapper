@@ -157,6 +157,10 @@ OTHER
 	as it could have unintended consequences.
 	
 	
+ == When this module is loaded it will automatically migrate any old data to
+	work with the newer data format.
+	
+	
  == If you create a new template or job using the `New-YoutubeDlItem` cmdlet
 	without specifying the '-DontMoveConfigurationFile' switch, the
 	configuration files will be moved inside of the '\Templates' or '\Jobs'
