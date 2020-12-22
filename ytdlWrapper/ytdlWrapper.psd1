@@ -3,7 +3,7 @@
 	RootModule = 'ytdlWrapper.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '0.2.0'
+	ModuleVersion = '0.2.1'
 	
 	# ID used to uniquely identify this module
 	GUID = 'adb3211a-7554-4beb-a591-e110130b708f'

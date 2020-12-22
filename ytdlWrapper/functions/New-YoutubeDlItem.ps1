@@ -311,7 +311,7 @@ function New-YoutubeDlItem
 			
 			# Create the object and save it to the database.
 			Write-Verbose "Creating new youtube-dl job object."
-			$newJob = [YoutubeDlJob]::new($Name, $Path, $initialVariableValues)
+			$newJob = [YoutubeDlJob]::new($Name, $Path, $initialVariableValues, $null, $null)
 			$jobList.Add($newJob)
 			if ($PSCmdlet.ShouldProcess("Saving newly-created template to database at '$script:JobData'.", "Are you sure you want to save the newly-created template to the database at '$script:JobData'?", "Save File Prompt"))
 			{

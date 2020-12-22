@@ -303,6 +303,16 @@ function Invoke-YoutubeDl
 				{
 					Invoke-Process -Path "$script:Folder\$hash.conf"
 				}
+				# Set the appropriate execution information.
+				if ($LASTEXITCODE -eq 0)
+				{
+					$jobObject._lastExecutionSuccess = $true
+				}
+				else
+				{
+					$jobObject._lastExecutionSuccess = $false
+				}
+				$jobObject._lastExecutionTime = Get-Date
 				
 				# Clean up the temporary file.
 				if ($PSCmdlet.ShouldProcess("Clean-up temporary configuration file from: '$script:Folder\$hash.conf'.", "Are you sure you want to clean-up the temporary configuration file from: '$script:Folder\$hash.conf'?", "Delete File Prompt"))
@@ -312,11 +322,22 @@ function Invoke-YoutubeDl
 				
 				# If a scriptblock didn't return a value, warn the user.
 				Write-Verbose "Updating variable values for the job."
-				$return = $jobObject.UpdateVariableValues()
-				if (-not [System.String]::IsNullOrWhiteSpace($return))
+				$scriptblocks = $jobObject.GetScriptblocks()
+				foreach ($key in $scriptblocks.Keys)
 				{
-					Write-Error "The job: '$name' has a scriptblock definition named: '$return' which did not return a value!`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."
-					return
+					$scriptblock = [scriptblock]::Create($scriptblocks[$key])
+					$returnResult = Invoke-Command -ScriptBlock $scriptblock
+					# If no value is returned, return the variable name to the invocation
+					# cmdlet to warn the user.
+					if ($null -eq $returnResult)
+					{
+						Write-Error "The job: '$name' has a scriptblock definition named: '$key' which did not return a value!`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."
+						$jobObject._lastExecutionSuccess = $false
+						$jobObject._Variables[$key] = $null
+						continue
+					}
+					
+					$jobObject._Variables[$key] = $returnResult
 				}
 				
 				if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
