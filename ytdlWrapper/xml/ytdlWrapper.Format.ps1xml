@@ -779,6 +779,27 @@
 								</ScriptBlock>
 							</ListItem>
 							
+							<!-- The last execution result of the template. -->
+							<ListItem>
+								<Label>Last Execution</Label>
+								<ScriptBlock>
+									$obj = $_
+									if ($null -eq $obj._lastExecutionTime)
+									{
+										return "`e[90mNever`e[0m"
+									}
+									if ($obj._lastExecutionSuccess)
+									{
+										$string = "`e[32mSuccess`e[0m"
+									}
+									else
+									{
+										$string = "`e[31mFailure`e[0m"
+									}
+									return "$($obj._lastExecutionTime.ToString(`"dd MMMM yyyy  HH:mm:ss`"))  $string"
+								</ScriptBlock>
+							</ListItem>
+							
 						</ListItems>
 					</ListEntry>
 					
@@ -950,6 +971,27 @@
 								</ScriptBlock>
 							</ListItem>
 							
+							<!-- The last execution result of the template. -->
+							<ListItem>
+								<Label>Last Execution</Label>
+								<ScriptBlock>
+									$obj = $_
+									if ($null -eq $obj._lastExecutionTime)
+									{
+										return "`e[90mNever`e[0m"
+									}
+									if ($obj._lastExecutionSuccess)
+									{
+										$string = "`e[32mSuccess✅`e[0m"
+									}
+									else
+									{
+										$string = "`e[31mFailure❌`e[0m"
+									}
+									return "$($obj._lastExecutionTime.ToString(`"dd MMMM yyyy  HH:mm:ss`"))  $string"
+								</ScriptBlock>
+							</ListItem>
+							
 						</ListItems>
 					</ListEntry>
 					
@@ -1028,6 +1070,36 @@
 														}
 														$string = $string.Remove($string.Length - 2)
 														return $string
+													}
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The last time of execution. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													if ($null -eq $_._lastExecutionTime)
+													{
+														return "LastExecutionTime = NULL"
+													}
+													else
+													{
+														"LastExecutionTime = $($_._lastExecutionTime)"
+													}
+												</ScriptBlock>
+											</ExpressionBinding>
+											<NewLine />
+											
+											<!-- The last execution state. -->
+											<ExpressionBinding>
+												<ScriptBlock>
+													if ($null -eq $_._lastExecutionSuccess)
+													{
+														return "LastExecutionSuccess = NULL"
+													}
+													else
+													{
+														"LastExecutionSuccess = $($_._lastExecutionSuccess)"
 													}
 												</ScriptBlock>
 											</ExpressionBinding>
