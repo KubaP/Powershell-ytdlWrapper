@@ -271,7 +271,7 @@ function New-YoutubeDlItem
 			# Validate that each required variable in the configuration file
 			# has been given an initial value.
 			$variableDefinitions = Read-ConfigDefinitions -Path $Path -VariableDefinitions
-			$initialVariableValues = New-Object -TypeName hashtable
+			$initialVariableValues = @{}
 			foreach ($definition in $variableDefinitions)
 			{
 				if ($PSBoundParameters.ContainsKey($definition))

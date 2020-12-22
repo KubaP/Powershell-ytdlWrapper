@@ -210,7 +210,7 @@ function Invoke-YoutubeDl
 			# user provided value. Quit if the user has failed to give in a 
 			# certain value.
 			$inputNames = $templateObject.GetInputs()
-			$inputs = New-Object -TypeName hashtable
+			$inputs = @{}
 			foreach ($input in $inputNames)
 			{
 				if ($PSBoundParameters.ContainsKey($input))
