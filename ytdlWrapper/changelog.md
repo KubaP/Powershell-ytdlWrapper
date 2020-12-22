@@ -1,5 +1,5 @@
 ﻿# Changelog
-## 0.2.1 (2020-12-xx)
+## 0.2.1 (2020-12-22)
 ⚠This version modifies the object/data format. There is an automatic migration method which runs when the module is imported, and migrates data from `v0.2.0`.
  - Update: `[YoutubeDlJob]`: Holds information regarding the last execution of the job; date-time and success state.
  - Update: `format.ps1xml`: Shows the new execution state information for jobs.
