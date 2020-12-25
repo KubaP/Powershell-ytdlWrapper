@@ -3,7 +3,7 @@
 	Changes a value of a youtube-dl item.
 	
 .DESCRIPTION
-	The `Set-YoutubeDlItem` cmdlet changes the value of a  youtube-dl template
+	The `Set-YoutubeDlItem` cmdlet changes the value of a youtube-dl template
 	or job.
 	
 	This cmdlet can be used to change a template's/job's path of the location
@@ -55,8 +55,7 @@
 		You can pipe the name of the item to change.
 	
 .OUTPUTS
-	YoutubeDlTemplate
-	YoutubeDlJob
+	None
 	
 .NOTES
 	When changing a job using the '-Job' switch, a dynamic parameter

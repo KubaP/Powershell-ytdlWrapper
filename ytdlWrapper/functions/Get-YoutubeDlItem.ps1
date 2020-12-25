@@ -3,8 +3,8 @@
 	Gets the specified youtube-dl item(s).
 	
 .DESCRIPTION
-	The `Get-Item` cmdlet gets one or more youtube-dl templates or jobs,
-	specified by their name(s).
+	The `Get-YoutubeDlItem` cmdlet gets one or more youtube-dl templates or
+	jobs, specified by their name(s).
 	
 .PARAMETER Template
 	Indicates that this cmdlet will be retrieving youtube-dl template(s).
