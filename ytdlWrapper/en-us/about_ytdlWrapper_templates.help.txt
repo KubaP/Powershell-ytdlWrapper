@@ -28,13 +28,13 @@ SETTING UP A CONFIGURATION FILE
 	
 		i@{name}
 		
-		'name' is a string which acts as a user-friendly identifier for this
+		"name" is a string which acts as a user-friendly identifier for this
 		input field. The string can only contain the characters: a-zA-Z0-9_
 	 [!]The string cannot contain a space.
 	 	
 		This input definition can go anywhere in the file. It is recommended
-		to place this definition after a youtube-dl flag, such as '-f' or
-		'--autonumber-start'.
+		to place this definition after a youtube-dl flag, such as after '-f'
+		or '--output'.
 	
 	
  == An example of using an input to control the numbering:
@@ -67,7 +67,7 @@ SETTING UP A CONFIGURATION FILE
 	
  [!]Notice that the input definition is wrapped inside of the " " double-quotes.
 	If youtube-dl expects a value within quotes, then the input definition must
-	also go within quotes, since only the i@{...} part is replaced with the 
+	also go within quotes, since only the 'i@{...}' part is replaced with the 
 	user provided value.
 	
 	

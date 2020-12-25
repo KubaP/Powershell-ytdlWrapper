@@ -29,7 +29,7 @@ SETTING UP A CONFIGURATION FILE
 	
 		v@{name}{start{scriptblock}end}
 		
-		'name' is a string which acts as a user-friendly identifier for this
+		"name" is a string which acts as a user-friendly identifier for this
 		variable. The string can only contain the characters: a-zA-Z0-9_
 	 [!]The string cannot contain a space.
 	 
@@ -37,9 +37,13 @@ SETTING UP A CONFIGURATION FILE
 		scriptblock must always return a value.
 	 [!]The module cannot check whether a scriptblock always returns a value, so
 	 	this is on the user to ensure is true.
+		 
+		This variable definition can go anywhere in the file. It is recommended
+		to place this definition after a youtube-dl flag, such as after '-f'
+		or '--autonumber-start'.
 	
- [!]There are input definitions for a template file. These **cannot** be used
-	within a configuration file designed for a job.
+ [!]Input definitions (used for a template configuration file) **cannot** be
+ 	used within a configuration file designed for a job.
 	
 	
  == An example of using a variable to auto number files:
@@ -50,11 +54,11 @@ SETTING UP A CONFIGURATION FILE
 		--write-thumbnail
 		--add-metadata
 
-		-f 'best'
-		-o '~\downloads\%(autonumber)04d - %(title)s.%(ext)s'
+		-f "best"
+		-o "~\downloads\%(autonumber)04d - %(title)s.%(ext)s"
 		'https:\\youtube.com\some-id'
 	
-	When `Invoke-YoutubeDl` is ran with this job, the 'Number' variable is set
+	When `Invoke-YoutubeDl` is ran with this job, the "Number" variable is set
 	a value from the previous run, and after youtube-dl finishes, the value is
 	set to 6.
 	
@@ -66,7 +70,11 @@ CREATING A NEW JOB
 	
 		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path "~\archive.conf" `
 				 -Number "5"
-				
+	
+	This command will create a new job named "archive", and move the
+	configuration file to the module appdata folder. It will also initialise
+	the "Number" variable to an initial value of "5".
+			
 	-Name
 		Specifies the name of the job to be created; must be unique.
 	

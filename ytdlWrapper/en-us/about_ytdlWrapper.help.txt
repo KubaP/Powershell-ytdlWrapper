@@ -21,7 +21,7 @@ OVERVIEW
  
  
  == The cmdlets in this module operate on [YoutubeDlTemplate] and
-	[YoutubeDlJob] objects. the objects retrieved by the `Get-YoutubeDlItem`
+	[YoutubeDlJob] objects. The objects retrieved by the `Get-YoutubeDlItem`
 	cmdlet can be piped to:
 		- Set-YoutubeDlItem
 		- Remove-YoutubeDlItem
@@ -37,7 +37,7 @@ OVERVIEW
         Format-Custom   fc
         Format-Wide     fw
     
-    The 'Format-Custom' & 'Format-List' views contain the largest amount
+    The `Format-Custom` & `Format-List` views contain the largest amount
     of information regarding the template or job.
 	
 	
@@ -82,7 +82,7 @@ USING THIS MODULE
 	
  == Options (2) involves using an almost-complete youtube-dl configuration file
 	as a template. This file will not have everything hardcoded, so when a
-	template is executed, the cmdlet will ask the user for inputs to
+	template is executed, the cmdlet will assk the user for inputs to
 	"fill in the gaps", before invoking youtube-dl.
 	
 	An example of this is a "music" template. The configuration file is set up
