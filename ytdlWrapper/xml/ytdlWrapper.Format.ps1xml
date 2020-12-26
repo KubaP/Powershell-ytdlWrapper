@@ -699,7 +699,7 @@
 							<ListItem>
 								<Label>Variables</Label>
 								<ScriptBlock>
-									if ($_._Variables.Keys.Count -eq 0)
+									if ($_.Variables.Keys.Count -eq 0)
 									{
 										return "NULL"
 									}
@@ -710,27 +710,27 @@
 										{
 											"Valid"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}`n`r"
+													$string += "{$key = $($obj.Variables[$key])}`n`r"
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
 											}
 											"InvalidPath"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}`n`r"
+													$string += "{$key = $($obj.Variables[$key])}`n`r"
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "`e[90m$string`e[0m`e[31m?`e[0m"
 											}
 											"HasInputs"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}`n`r"
+													$string += "{$key = $($obj.Variables[$key])}`n`r"
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
@@ -739,15 +739,15 @@
 											{
 												$missingVars = $obj.GetMissingVariables()
 												$oldVars = $obj.GetUnnecessaryVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($oldVars -contains $key)
 													{
-														$string += "`e[90m{$key = $($obj._Variables[$key])}`e[0m`e[31mX`e[0m`n`r"
+														$string += "`e[90m{$key = $($obj.Variables[$key])}`e[0m`e[31mX`e[0m`n`r"
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}`n`r"
+														$string += "{$key = $($obj.Variables[$key])}`n`r"
 													}
 												}
 												foreach ($key in $missingVars)
@@ -760,7 +760,7 @@
 											"UninitialisedVariables"
 											{
 												$nullVars = $obj.GetNullVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($nullVars -contains $key)
 													{
@@ -768,7 +768,7 @@
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}`n`r"
+														$string += "{$key = $($obj.Variables[$key])}`n`r"
 													}
 												}
 												$string = $string.Remove($string.Length - 2)
@@ -784,11 +784,11 @@
 								<Label>Last Execution</Label>
 								<ScriptBlock>
 									$obj = $_
-									if ($null -eq $obj._lastExecutionTime)
+									if ($null -eq $obj.LastExecutionTime)
 									{
 										return "`e[90mNever`e[0m"
 									}
-									if ($obj._lastExecutionSuccess)
+									if ($obj.LastExecutionSuccess)
 									{
 										$string = "`e[32mSuccess`e[0m"
 									}
@@ -796,7 +796,7 @@
 									{
 										$string = "`e[31mFailure`e[0m"
 									}
-									return "$($obj._lastExecutionTime.ToString(`"dd MMMM yyyy  HH:mm:ss`"))  $string"
+									return "$($obj.LastExecutionTime.ToString(`"dd MMMM yyyy  HH:mm:ss`"))  $string"
 								</ScriptBlock>
 							</ListItem>
 							
@@ -891,7 +891,7 @@
 							<ListItem>
 								<Label>Variables</Label>
 								<ScriptBlock>
-									if ($_._Variables.Keys.Count -eq 0)
+									if ($_.Variables.Keys.Count -eq 0)
 									{
 										return "NULL"
 									}
@@ -902,27 +902,27 @@
 										{
 											"Valid"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}`n`r"
+													$string += "{$key = $($obj.Variables[$key])}`n`r"
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
 											}
 											"InvalidPath"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}`n`r"
+													$string += "{$key = $($obj.Variables[$key])}`n`r"
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "`e[90m$string`e[0m❓"
 											}
 											"HasInputs"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}`n`r"
+													$string += "{$key = $($obj.Variables[$key])}`n`r"
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
@@ -931,15 +931,15 @@
 											{
 												$missingVars = $obj.GetMissingVariables()
 												$oldVars = $obj.GetUnnecessaryVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($oldVars -contains $key)
 													{
-														$string += "`e[90;9m{$key = $($obj._Variables[$key])}`e[0m❌`n`r"
+														$string += "`e[90;9m{$key = $($obj.Variables[$key])}`e[0m❌`n`r"
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}`n`r"
+														$string += "{$key = $($obj.Variables[$key])}`n`r"
 													}
 												}
 												foreach ($key in $missingVars)
@@ -952,7 +952,7 @@
 											"UninitialisedVariables"
 											{
 												$nullVars = $obj.GetNullVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($nullVars -contains $key)
 													{
@@ -960,7 +960,7 @@
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}`n`r"
+														$string += "{$key = $($obj.Variables[$key])}`n`r"
 													}
 												}
 												$string = $string.Remove($string.Length - 2)
@@ -976,11 +976,11 @@
 								<Label>Last Execution</Label>
 								<ScriptBlock>
 									$obj = $_
-									if ($null -eq $obj._lastExecutionTime)
+									if ($null -eq $obj.LastExecutionTime)
 									{
 										return "`e[90mNever`e[0m"
 									}
-									if ($obj._lastExecutionSuccess)
+									if ($obj.LastExecutionSuccess)
 									{
 										$string = "`e[32mSuccess✅`e[0m"
 									}
@@ -988,7 +988,7 @@
 									{
 										$string = "`e[31mFailure❌`e[0m"
 									}
-									return "$($obj._lastExecutionTime.ToString(`"dd MMMM yyyy  HH:mm:ss`"))  $string"
+									return "$($obj.LastExecutionTime.ToString(`"dd MMMM yyyy  HH:mm:ss`"))  $string"
 								</ScriptBlock>
 							</ListItem>
 							
@@ -1057,16 +1057,16 @@
 											<!-- The inputs. -->
 											<ExpressionBinding>
 												<ScriptBlock>
-													if ($_._Variables.Keys.Count -eq 0)
+													if ($_.Variables.Keys.Count -eq 0)
 													{
 														"Variables = NULL"
 													}
 													else
 													{
 														$string = "Variables = "
-														foreach ($key in $_._Variables.Keys)
+														foreach ($key in $_.Variables.Keys)
 														{
-															$string += "{$key = $($_._Variables[$key])}, "
+															$string += "{$key = $($_.Variables[$key])}, "
 														}
 														$string = $string.Remove($string.Length - 2)
 														return $string
@@ -1078,13 +1078,13 @@
 											<!-- The last time of execution. -->
 											<ExpressionBinding>
 												<ScriptBlock>
-													if ($null -eq $_._lastExecutionTime)
+													if ($null -eq $_.LastExecutionTime)
 													{
 														return "LastExecutionTime = NULL"
 													}
 													else
 													{
-														"LastExecutionTime = $($_._lastExecutionTime)"
+														"LastExecutionTime = $($_.LastExecutionTime)"
 													}
 												</ScriptBlock>
 											</ExpressionBinding>
@@ -1093,13 +1093,13 @@
 											<!-- The last execution state. -->
 											<ExpressionBinding>
 												<ScriptBlock>
-													if ($null -eq $_._lastExecutionSuccess)
+													if ($null -eq $_.LastExecutionSuccess)
 													{
 														return "LastExecutionSuccess = NULL"
 													}
 													else
 													{
-														"LastExecutionSuccess = $($_._lastExecutionSuccess)"
+														"LastExecutionSuccess = $($_.LastExecutionSuccess)"
 													}
 												</ScriptBlock>
 											</ExpressionBinding>
@@ -1203,7 +1203,7 @@
 							<!-- The job variables. -->
 							<TableColumnItem>
 								<ScriptBlock>
-									if ($_._Variables.Keys.Count -eq 0)
+									if ($_.Variables.Keys.Count -eq 0)
 									{
 										return "NULL"
 									}
@@ -1214,27 +1214,27 @@
 										{
 											"Valid"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}, "
+													$string += "{$key = $($obj.Variables[$key])}, "
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
 											}
 											"InvalidPath"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}, "
+													$string += "{$key = $($obj.Variables[$key])}, "
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "`e[90m$string`e[0m"
 											}
 											"HasInputs"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}, "
+													$string += "{$key = $($obj.Variables[$key])}, "
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
@@ -1243,15 +1243,15 @@
 											{
 												$missingVars = $obj.GetMissingVariables()
 												$oldVars = $obj.GetUnnecessaryVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($oldVars -contains $key)
 													{
-														$string += "`e[90;9m{$key = $($obj._Variables[$key])}`e[0m, "
+														$string += "`e[90;9m{$key = $($obj.Variables[$key])}`e[0m, "
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}, "
+														$string += "{$key = $($obj.Variables[$key])}, "
 													}
 												}
 												foreach ($key in $missingVars)
@@ -1264,7 +1264,7 @@
 											"UninitialisedVariables"
 											{
 												$nullVars = $obj.GetNullVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($nullVars -contains $key)
 													{
@@ -1272,7 +1272,7 @@
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}, "
+														$string += "{$key = $($obj.Variables[$key])}, "
 													}
 												}
 												$string = $string.Remove($string.Length - 2)
@@ -1359,7 +1359,7 @@
 							<!-- The job variables. -->
 							<TableColumnItem>
 								<ScriptBlock>
-									if ($_._Variables.Keys.Count -eq 0)
+									if ($_.Variables.Keys.Count -eq 0)
 									{
 										return "NULL"
 									}
@@ -1370,27 +1370,27 @@
 										{
 											"Valid"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}, "
+													$string += "{$key = $($obj.Variables[$key])}, "
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
 											}
 											"InvalidPath"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}, "
+													$string += "{$key = $($obj.Variables[$key])}, "
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "`e[90m$string`e[0m"
 											}
 											"HasInputs"
 											{
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
-													$string += "{$key = $($obj._Variables[$key])}, "
+													$string += "{$key = $($obj.Variables[$key])}, "
 												}
 												$string = $string.Remove($string.Length - 2)
 												return "$string"
@@ -1399,15 +1399,15 @@
 											{
 												$missingVars = $obj.GetMissingVariables()
 												$oldVars = $obj.GetUnnecessaryVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($oldVars -contains $key)
 													{
-														$string += "`e[90;9m{$key = $($obj._Variables[$key])}`e[0m, "
+														$string += "`e[90;9m{$key = $($obj.Variables[$key])}`e[0m, "
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}, "
+														$string += "{$key = $($obj.Variables[$key])}, "
 													}
 												}
 												foreach ($key in $missingVars)
@@ -1420,7 +1420,7 @@
 											"UninitialisedVariables"
 											{
 												$nullVars = $obj.GetNullVariables()
-												foreach ($key in $obj._Variables.Keys)
+												foreach ($key in $obj.Variables.Keys)
 												{
 													if ($nullVars -contains $key)
 													{
@@ -1428,7 +1428,7 @@
 													}
 													else
 													{
-														$string += "{$key = $($obj._Variables[$key])}, "
+														$string += "{$key = $($obj.Variables[$key])}, "
 													}
 												}
 												$string = $string.Remove($string.Length - 2)

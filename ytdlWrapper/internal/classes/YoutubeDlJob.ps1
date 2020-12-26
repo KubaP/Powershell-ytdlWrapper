@@ -11,19 +11,19 @@ class YoutubeDlJob
 {
 	[string]$Name
 	[string]$Path
-	[hashtable]$_Variables
-	[nullable[datetime]]$_lastExecutionTime
-	[nullable[boolean]]$_lastExecutionSuccess
+	[hashtable]$Variables
+	[nullable[datetime]]$LastExecutionTime
+	[nullable[boolean]]$LastExecutionSuccess
 	
 	# Constructor.
-	YoutubeDlJob ([string]$name, [string]$path, [hashtable]$variableValues, [nullable[datetime]]$lastExecutionTime, 
+	YoutubeDlJob ([string]$name, [string]$path, [hashtable]$variables, [nullable[datetime]]$lastExecutionTime, 
 		[nullable[boolean]]$lastExecutionSuccess)
 	{
 		$this.Name = $name
 		$this.Path = $path
-		$this._Variables = $variableValues
-		$this._lastExecutionTime = $lastExecutionTime
-		$this._lastExecutionSuccess = $lastExecutionSuccess
+		$this.Variables = $variables
+		$this.LastExecutionTime = $lastExecutionTime
+		$this.LastExecutionSuccess = $lastExecutionSuccess
 	}
 		
 	[JobState] GetState()
@@ -81,8 +81,8 @@ class YoutubeDlJob
 		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
 		if (-not($configVariables.Count -eq 0))
 		{
-			$differenceA = $configVariables | Where-Object { $this._Variables.Keys -notcontains $_ }
-			$differenceB = $this._Variables.Keys | Where-Object { $configVariables -notcontains $_ }
+			$differenceA = $configVariables | Where-Object { $this.Variables.Keys -notcontains $_ }
+			$differenceB = $this.Variables.Keys | Where-Object { $configVariables -notcontains $_ }
 			if (($null -ne $differenceA) -or ($null -ne $differenceB))
 			{
 				return $true
@@ -94,7 +94,7 @@ class YoutubeDlJob
 	[boolean] HasUninitialisedVariables()
 	{
 		# Check that each variable has a value, i.e. is not uninitialised.
-		foreach ($value in $this._Variables.Values)
+		foreach ($value in $this.Variables.Values)
 		{
 			if (($null -eq $value) -or [system.string]::IsNullOrWhiteSpace($value))
 			{
@@ -111,24 +111,12 @@ class YoutubeDlJob
 		return Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
 	}
 	
-	[System.Collections.Generic.List[string]] GetStoredVariables()
-	{
-		# Get the variable names defined in this object.
-		$returnList = New-Object -TypeName System.Collections.Generic.List[string]
-		foreach ($key in $this._Variables.Keys)
-		{
-			$returnList.Add($key)
-		}
-		
-		return $returnList
-	}
-	
 	[System.Collections.Generic.List[string]] GetMissingVariables()
 	{
 		# Get the variables which are missing in the object but present in 
 		# the configuration file.
 		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
-		return $configVariables | Where-Object { $this._Variables.Keys -notcontains $_ }
+		return $configVariables | Where-Object { $this.Variables.Keys -notcontains $_ }
 	}
 	
 	[System.Collections.Generic.List[string]] GetUnnecessaryVariables()
@@ -136,16 +124,16 @@ class YoutubeDlJob
 		# Get the variables which are present in the object but missing in
 		# the configuration file.
 		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
-		return $this._Variables.Keys | Where-Object { $configVariables -notcontains $_ }
+		return $this.Variables.Keys | Where-Object { $configVariables -notcontains $_ }
 	}
 	
 	[System.Collections.Generic.List[string]] GetNullVariables()
 	{
 		# Get any variable names defined in this object which don't have a value.
 		$returnList = New-Object -TypeName System.Collections.Generic.List[string]
-		foreach ($key in $this._Variables.Keys)
+		foreach ($key in $this.Variables.Keys)
 		{
-			if (($null -eq $this._Variables[$key]) -or [system.string]::IsNullOrWhiteSpace($this._Variables[$key]))
+			if (($null -eq $this.Variables[$key]) -or [system.string]::IsNullOrWhiteSpace($this.Variables[$key]))
 			{
 				$returnList.Add($key)
 			}
@@ -165,9 +153,9 @@ class YoutubeDlJob
 		# Go through all variable definitions and substitute the stored variable
 		# value, before returning the modified file content string.
 		$configFilestream = Get-Content -Path $this.Path -Raw
-		foreach ($key in $this._Variables.Keys)
+		foreach ($key in $this.Variables.Keys)
 		{
-			$configFilestream = $configFilestream -replace "v@{$key}{start{(?s)(.*?)}end}", $this._Variables[$key]
+			$configFilestream = $configFilestream -replace "v@{$key}{start{(?s)(.*?)}end}", $this.Variables[$key]
 		}
 		
 		return $configFilestream

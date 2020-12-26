@@ -41,7 +41,7 @@ $argCompleter_JobVariable = {
 		
 		if ($null -ne $job) {
 			# Return the variables which match currently typed in pattern
-			$job._Variables.Keys | Where-Object { $_ -like "$($wordToComplete.Replace(`"`'`", `"`"))*" } `
+			$job.Variables.Keys | Where-Object { $_ -like "$($wordToComplete.Replace(`"`'`", `"`"))*" } `
 				| ForEach-Object { "'$_'" }
 		}
 	}

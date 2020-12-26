@@ -168,9 +168,8 @@ function Set-YoutubeDlItem
 		
 		# Figure out which are the new variables in the configuration file
 		# to add parameters for.
-		$jobVariables = $jobObject.GetStoredVariables()
 		$configVariables = $jobObject.GetVariables()
-		$newVariables = $configVariables | Where-Object { $jobVariables -notcontains $_ }
+		$newVariables = $configVariables | Where-Object { $jobObject.Variables -notcontains $_ }
 		
 		#Define the dynamic parameter dictionary to add all new parameters to
 		$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
@@ -281,7 +280,7 @@ function Set-YoutubeDlItem
 				}
 				
 				# Validate that the variable-to-modify exists.
-				if ($jobObject._Variables.Keys -notcontains $Variable)
+				if ($jobObject.Variables.Keys -notcontains $Variable)
 				{
 					Write-Error "The job: '$name' does not contain the variable named: '$Variable'!"
 					return
@@ -294,7 +293,7 @@ function Set-YoutubeDlItem
 				}
 				
 				Write-Verbose "Changing the variable property of the job object."
-				$jobObject._Variables[$Variable] = $Value
+				$jobObject.Variables[$Variable] = $Value
 			}
 			
 			if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
@@ -330,12 +329,11 @@ function Set-YoutubeDlItem
 			
 			# Figure out which are the new variables in the configuration file
 			# and which variables in the job (may) need to be removed.
-			$jobVariables = $jobObject.GetStoredVariables()
 			$configVariables = $jobObject.GetVariables()
-			$newVariables = $configVariables | Where-Object { $jobVariables -notcontains $_ }
-			$oldVariables = $jobVariables | Where-Object { $configVariables -notcontains $_ }
+			$newVariables = $configVariables | Where-Object { $jobObject.Variables -notcontains $_ }
+			$oldVariables = $jobObject.Variables | Where-Object { $configVariables -notcontains $_ }
 			
-			$variableList = $jobObject._Variables
+			$variableList = $jobObject.Variables
 			# First remove all of the not-needed-anymore variables from the
 			# hashtable.
 			foreach ($key in $oldVariables)
@@ -372,7 +370,7 @@ function Set-YoutubeDlItem
 			
 			# Set the modified variable hashtable.
 			Write-Verbose "Updating the variables of the job object."
-			$jobObject._Variables = $variableList
+			$jobObject.Variables = $variableList
 			if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
 			{
 				Export-Clixml -Path $script:JobData -InputObject $jobList -WhatIf:$false -Confirm:$false `

@@ -306,13 +306,13 @@ function Invoke-YoutubeDl
 				# Set the appropriate execution information.
 				if ($LASTEXITCODE -eq 0)
 				{
-					$jobObject._lastExecutionSuccess = $true
+					$jobObject.LastExecutionSuccess = $true
 				}
 				else
 				{
-					$jobObject._lastExecutionSuccess = $false
+					$jobObject.LastExecutionSuccess = $false
 				}
-				$jobObject._lastExecutionTime = Get-Date
+				$jobObject.LastExecutionTime = Get-Date
 				
 				# Clean up the temporary file.
 				if ($PSCmdlet.ShouldProcess("Clean-up temporary configuration file from: '$script:Folder\$hash.conf'.", "Are you sure you want to clean-up the temporary configuration file from: '$script:Folder\$hash.conf'?", "Delete File Prompt"))
@@ -332,12 +332,12 @@ function Invoke-YoutubeDl
 					if ($null -eq $returnResult)
 					{
 						Write-Error "The job: '$name' has a scriptblock definition named: '$key' which did not return a value!`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."
-						$jobObject._lastExecutionSuccess = $false
-						$jobObject._Variables[$key] = $null
+						$jobObject.LastExecutionSuccess = $false
+						$jobObject.Variables[$key] = $null
 						continue
 					}
 					
-					$jobObject._Variables[$key] = $returnResult
+					$jobObject.Variables[$key] = $returnResult
 				}
 				
 				if ($PSCmdlet.ShouldProcess("Updating database at '$script:JobData' with the changes.", "Are you sure you want to update the database at '$script:JobData' with the changes?", "Save File Prompt"))
