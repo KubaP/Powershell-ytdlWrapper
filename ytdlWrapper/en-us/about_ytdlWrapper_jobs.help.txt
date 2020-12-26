@@ -68,7 +68,7 @@ CREATING A NEW JOB
  == Assuming the configuration file has a variable named 'Number'.
  	To create a job, run:
 	
-		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path "~\archive.conf" `
+		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path "~\archive.conf" 
 				 -Number "5"
 	
 	This command will create a new job named "archive", and move the
@@ -167,7 +167,7 @@ RETRIEVING A JOB
 CHANGING THE PROPERTIES OF A JOB
  == To change the path of the location of the configuration file, run:
 	
-		PS C:\> Set-YoutubeDlItem -Job -Name "archive" `
+		PS C:\> Set-YoutubeDlItem -Job -Name "archive" 
 				 -Path "~\new_template.conf"
 	
 	This command will change the path of the location of the configuration
@@ -203,7 +203,7 @@ CHANGING THE PROPERTIES OF A JOB
 	
 == To change the value of a stored variable, run:
 	
-		PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Variable "Number" `
+		PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Variable "Number" 
 				 -Value "100"
 				 
 	This command will change the value of the 'Number' variable to the new
@@ -240,7 +240,7 @@ CHANGING THE PROPERTIES OF A JOB
  ==	Assuming the configuration file has a new variable named 'Format'.
  	To update a job after changing the configuration file, run:
 	
-		PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Update `
+		PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Update 
 				 -Format "best"
 				 
 	This command will sync any changes between the configuration file and the
@@ -332,7 +332,7 @@ EXAMPLE
 		
 	Creating the job:
 	
-		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path ~\archive.conf `
+		PS C:\> New-YoutubeDlItem -Job -Name "archive" -Path ~\archive.conf 
 				 -Number "5"
 		
 	Running the job:

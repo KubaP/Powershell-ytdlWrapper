@@ -72,7 +72,7 @@
 	
 .EXAMPLE
 	PS C:\> New-YoutubeDlItem -Template -Name "music" -Path ~\music.conf
-				-DontMoveConfigurationFile
+			 -DontMoveConfigurationFile
 				
 	Creates a new youtube-dl template named "music", but doesn't move the
 	configuration file from the existing location. If this file is ever moved
@@ -80,23 +80,23 @@
 	the new location of the configuration file.
 	
 .EXAMPLE
-	Assuming 'music.conf' has an input definition named "Url".
+	Assuming "music.conf" has an input definition named "Url".
 	
-	PS C:\> New-YoutubeDlItem -Template -Name "music" -Path ~\music.conf |
-				Invoke-YoutubeDl -Template -Url "https:\\some\youtube\url"
+	PS C:\> New-YoutubeDlItem -Template -Name "music" -Path ~\music.conf | 
+			 Invoke-YoutubeDl -Template -Url "https:\\some\youtube\url"
 	
 	Creates a new youtube-dl template named "music", and then invokes
 	youtube-dl to run it, giving in the required inputs (Url) in the process.
 	
 .EXAMPLE
-	Assuming 'archive.conf' has a variable definition named "Autonumber".
+	Assuming "archive.conf" has a variable definition named "Autonumber".
 	
 	PS C:\> New-YoutubeDlJob -Job -Name "archive" -Path ~\archive.conf
-				-Autonumber "5"
+			 -Autonumber "5"
 				
 	Creates a new youtube-dl job named "archive", and moves the configuration
 	file from the home directory to the module appdata foler. Also sets 
-	the 'Autonumber' variable within this configuration file to an initial
+	the "Autonumber" variable within this configuration file to an initial
 	value of "5".
 	
 .LINK

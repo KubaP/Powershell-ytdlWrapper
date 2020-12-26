@@ -40,30 +40,7 @@
 .PARAMETER Confirm
 	Prompts you for confirmation before running any state-altering actions
 	in this cmdlet.
-	
-.EXAMPLE
-	PS C:\> Invoke-YoutubeDl -Path ~\download.conf
-	
-	Runs youtube-dl, giving it the "download.conf" configuration file to parse.
-	The configuration file must fully align to the youtube-dl config
-	specification.
-	
-.EXAMPLE
-	Assuming the template 'music' has the input named "Url".
-	
-	PS C:\> Invoke-YoutubeDl -Template -Name "music" -Url "https:\\some\url"
-	
-	Runs the "music" template, which takes in the '-Url' parameter to complete
-	the configuration file, before giving it to youtube-dl.
-	
-.EXAMPLE
-	PS C:\> Invoke-YoutubeDl -Job -Name "archive"
-	
-	Runs the "archive" job, which uses the stored variables to complete the
-	configuration file and pass it to youtube-dl. Afterwards, the scriptblocks
-	responsible for each variable run to generate the new variable values to 
-	be used for the next run.
-	
+
 .INPUTS
 	System.String[]
 		You can pipe one or more strings containing the names of the items
@@ -83,6 +60,29 @@
 	'about_ytdlWrapper_templates'.
 
 	This cmdlet is aliased by default to 'iydl'.
+	
+.EXAMPLE
+	PS C:\> Invoke-YoutubeDl -Path ~\download.conf
+	
+	Runs youtube-dl, giving it the "download.conf" configuration file to parse.
+	The configuration file must fully align to the youtube-dl config
+	specification.
+	
+.EXAMPLE
+	Assuming the template "music" has the input named "Url".
+	
+	PS C:\> Invoke-YoutubeDl -Template -Name "music" -Url "https:\\some\url"
+	
+	Runs the "music" template, which takes in the '-Url' parameter to complete
+	the configuration file, before giving it to youtube-dl.
+	
+.EXAMPLE
+	PS C:\> Invoke-YoutubeDl -Job -Name "archive"
+	
+	Runs the "archive" job, which uses the stored variables to complete the
+	configuration file and pass it to youtube-dl. Afterwards, the scriptblocks
+	responsible for each variable run to generate the new variable values to 
+	be used for the next run.
 	
 .LINK
 	New-YoutubeDlItem

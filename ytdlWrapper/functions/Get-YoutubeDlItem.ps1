@@ -48,8 +48,9 @@
 .EXAMPLE
 	PS C:\> Get-YoutubeDlItem -Job "music" | Invoke-YoutubeDl -Job
 	
-	Gets the youtube-dl job named "music", and then invokes youtube-dl to
-	run it automatically.
+	Gets the youtube-dl job named "music", and then pipes it to the 
+	`Invoke-YoutubeDl` cmdlet which invokes youtube-dl and run the job
+	automatically.
 	
 .LINK
 	New-YoutubeDlItem

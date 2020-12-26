@@ -135,7 +135,7 @@ INVOKING A TEMPLATE
  == Assuming the configuration file has an input named 'Url'.
  	To execute a template, run:
  
-		PS C:\> Invoke-YoutubeDl -Template -Name "music" `
+		PS C:\> Invoke-YoutubeDl -Template -Name "music" 
 				 -Url "https:\\youtube\some-id"
 	
 	This command will execute the "music" template, which has a 'Url' input
@@ -193,7 +193,7 @@ RETRIEVING A TEMPLATE
 CHANGING THE PROPERTIES OF A TEMPLATE
  == To change the path of the location of the configuration file, run:
 	
-		PS C:\> Set-YoutubeDlItem -Template -Name "music" `
+		PS C:\> Set-YoutubeDlItem -Template -Name "music" 
 				 -Path "~\new_template.conf"
 	
 	This command will change the path of the location of the configuration
@@ -272,8 +272,8 @@ EXAMPLE
 	
 	Running the template:
 	
-		PS C:\> Invoke-YoutubeDl -Template -Name "music" `
-				 -DownloadFolder "~\Downloads\Music" `
+		PS C:\> Invoke-YoutubeDl -Template -Name "music" 
+				 -DownloadFolder "~\Downloads\Music" 
 				 -Url "https:\\youtube.com\some-id"
 		
 	The result:

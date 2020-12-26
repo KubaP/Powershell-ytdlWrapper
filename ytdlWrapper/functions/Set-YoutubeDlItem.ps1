@@ -82,17 +82,17 @@
 	youtube-dl job named "archive".
 	
 .EXAMPLE
-	Assuming the job 'archive' has a variable "Autonumber"=5
+	Assuming the job "archive" has a variable "Autonumber"=5
 	
 	PS C:\> Set-YoutubeDlItem -Job -Name "archive" -Variable "Autonumber"
-				-Value "100"
+			 -Value "100"
 	
 	Changes the "Autonumber" variable of the job named "archive" to the new
 	value of "100". The next time the job will be run, this new value will 
 	be used.
 	
 .EXAMPLE
-	Assuming the job 'archive' has the variables "Autonumber"=5 and 
+	Assuming the job "archive" has the variables "Autonumber"=5 and 
 	"Format"=best.
 	
 	Assuming the configuration file has the variable definitions "Autonumber"
