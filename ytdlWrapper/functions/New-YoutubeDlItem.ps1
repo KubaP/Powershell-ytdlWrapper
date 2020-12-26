@@ -191,12 +191,19 @@ function New-YoutubeDlItem
 	
 	process
 	{
+		# Validate that the name isn't empty.
+		Write-Verbose "Validating parameters and the configuration file."
+		if ([system.string]::IsNullOrWhiteSpace($Name))
+		{
+			Write-Error "The name cannot be blank or empty!"
+			return
+		}
+		
 		if ($Template)
 		{
 			# Validate that the name isn't already taken.
 			$templateList = Read-Templates
 			$existingTemplate = $templateList | Where-Object { $_.Name -eq $Name }
-			Write-Verbose "Validating parameters and the configuration file."
 			if ($null -ne $existingTemplate)
 			{
 				if ($Force)
@@ -253,7 +260,6 @@ function New-YoutubeDlItem
 			# Validate that the name isn't already taken.
 			$jobList = Read-Jobs
 			$existingJob = $jobList | Where-Object { $_.Name -eq $Name }
-			Write-Verbose "Validating parameters and the configuration file."
 			if ($null -ne $existingJob)
 			{
 				if ($Force)
