@@ -200,7 +200,7 @@ $templateDatabaseVersion = [Regex]::Match((Get-Item -Path "$Folder\template-data
 if ($templateDatabaseVersion -eq "0.2.0")
 {
 	Write-Debug "`e[4mDetected database version 0.2.0!`e[0m"
-	Rename-Item -Path "$Folder\template-database.0.2.0.xml" -NewName "template-database.0.2.1.xml" -Force -WhatIf:$false -Confirm:$false
+	Rename-Item -Path "$Folder\template-database.0.2.0.xml" -NewName "template-database.0.2.1.xml" -Force -WhatIf:$false -Confirm:$false | Out-Null
 }
 
 # JOB DATA MIGRATION
