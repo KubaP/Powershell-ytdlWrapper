@@ -33,9 +33,8 @@ function Read-Jobs
 		# Iterate through all the objects.
 		foreach ($item in $xmlData)
 		{
-			# Rather than extracting the deserialised objects, which would
-			# create a mess of serialised and non-serialised objects, create
-			# new identical copies from scratch.
+			# Rather than extracting the deserialised objects, which would create a mess of serialised and
+			# non-serialised objects, create new identical copies from scratch.
 			if ($item.pstypenames[0] -eq "Deserialized.YoutubeDlJob")
 			{
 				$job = [YoutubeDlJob]::new($item.Name, $item.Path, $item._Variables, $item._lastExecutionTime, $item._lastExecutionSuccess)
@@ -44,7 +43,6 @@ function Read-Jobs
 		}
 	}
 	
-	# Return the list as a <List> object, rather than as an array,
-	# (ps converts by default).
+	# Return the list as a <List> object, rather than as an array, (ps converts by default).
 	Write-Output $jobList -NoEnumerate
 }

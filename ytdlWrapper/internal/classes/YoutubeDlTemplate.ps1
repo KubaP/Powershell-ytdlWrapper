@@ -68,8 +68,8 @@ class YoutubeDlTemplate
 	
 	[string] GetCompletedConfigFile([hashtable]$inputs)
 	{
-		# Go through all input definitions and substitute the user provided
-		# value, before returning the modified file content string.
+		# Go through all input definitions and substitute the user provided value,
+		# before returning the modified file content string.
 		$configFilestream = Get-Content -Path $this.Path -Raw
 		foreach ($key in $inputs.Keys)
 		{

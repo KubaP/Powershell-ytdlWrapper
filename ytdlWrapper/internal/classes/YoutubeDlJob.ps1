@@ -113,16 +113,14 @@ class YoutubeDlJob
 	
 	[System.Collections.Generic.List[string]] GetMissingVariables()
 	{
-		# Get the variables which are missing in the object but present in 
-		# the configuration file.
+		# Get the variables which are missing in the object but present in  the configuration file.
 		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
 		return $configVariables | Where-Object { $this.Variables.Keys -notcontains $_ }
 	}
 	
 	[System.Collections.Generic.List[string]] GetUnnecessaryVariables()
 	{
-		# Get the variables which are present in the object but missing in
-		# the configuration file.
+		# Get the variables which are present in the object but missing in the configuration file.
 		$configVariables =  Read-ConfigDefinitions -Path $this.Path -VariableDefinitions
 		return $this.Variables.Keys | Where-Object { $configVariables -notcontains $_ }
 	}
@@ -150,8 +148,8 @@ class YoutubeDlJob
 	
 	[string] GetCompletedConfigFile()
 	{
-		# Go through all variable definitions and substitute the stored variable
-		# value, before returning the modified file content string.
+		# Go through all variable definitions and substitute the stored variable value, 
+		# before returning the modified file content string.
 		$configFilestream = Get-Content -Path $this.Path -Raw
 		foreach ($key in $this.Variables.Keys)
 		{

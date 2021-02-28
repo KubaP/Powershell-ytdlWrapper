@@ -143,8 +143,8 @@ function New-YoutubeDlItem
 	
 	dynamicparam
 	{
-		# Only run the variable detection logic if creating a new job,
-		# and a valid configuration file path has been given in.
+		# Only run the variable detection logic if creating a new job, and a valid configuration file path
+		# has been given in.
 		if ($Job -and ($null -ne $Path) -and (Test-Path -Path $Path))
 		{
 			# Retrieve all instances of variable definitions in the config file.
@@ -232,9 +232,8 @@ function New-YoutubeDlItem
 			
 			if (-not $DontMoveConfigurationFile -and $PSCmdlet.ShouldProcess("Moving configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Templates'.", "Are you sure you want to move the configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Templates'?", "Move File Prompt")) 
 			{
-				# Move the file over to the module appdata folder, and rename it
-				# to the unique name of the template to avoid any potential
-				# filename collisions.
+				# Move the file over to the module appdata folder, and rename it to the unique name of the
+				# template to avoid any potential filename collisions.
 				$fileName = Split-Path -Path $Path -Leaf
 				Move-Item -Path $Path -Destination "$script:Folder\Templates" -Force -WhatIf:$false `
 					-Confirm:$false | Out-Null
@@ -274,8 +273,7 @@ function New-YoutubeDlItem
 				}
 			}
 			
-			# Validate that each required variable in the configuration file
-			# has been given an initial value.
+			# Validate that each required variable in the configuration file has been given an initial value.
 			$variableDefinitions = Read-ConfigDefinitions -Path $Path -VariableDefinitions
 			$initialVariableValues = @{}
 			foreach ($definition in $variableDefinitions)
@@ -304,9 +302,8 @@ function New-YoutubeDlItem
 			
 			if (-not $DontMoveConfigurationFile -and $PSCmdlet.ShouldProcess("Moving configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Jobs'.", "Are you sure you want to move the configuration file from '$(Split-Path -Path $Path -Parent)' to '$script:Folder\Jobs'?", "Move File Prompt"))
 			{
-				# Move the file over to the module appdata folder, and rename it
-				# to the unique name of the template to avoid any potential
-				# filename collisions.
+				# Move the file over to the module appdata folder, and rename it to the unique name of the
+				# template to avoid any potential filename collisions.
 				$fileName = Split-Path -Path $Path -Leaf
 				Move-Item -Path $Path -Destination "$script:Folder\Jobs" -Force -WhatIf:$false -Confirm:$false `
 					| Out-Null

@@ -155,9 +155,8 @@ function Set-YoutubeDlItem
 	
 	dynamicparam
 	{
-		# Only run the variable detection logic if a job is given, and the job
-		# exists, and it has a valid configuration file path, and the '-Update'
-		# switch is on.
+		# Only run the variable detection logic if a job is given, and the job exists,
+		# and it has a valid configuration file path, and the '-Update' switch is on.
 		if (-not $Job) { return }
 		if ($null -eq $Name) { return }
 		$jobList = Read-Jobs
@@ -166,8 +165,7 @@ function Set-YoutubeDlItem
 		if ($jobObject.GetState() -eq "InvalidPath") { return }
 		if (-not $Update) { return }
 		
-		# Figure out which are the new variables in the configuration file
-		# to add parameters for.
+		# Figure out which are the new variables in the configuration file to add parameters for.
 		$configVariables = $jobObject.GetVariables()
 		$newVariables = $configVariables | Where-Object { $jobObject.Variables -notcontains $_ }
 		
@@ -327,21 +325,19 @@ function Set-YoutubeDlItem
 				return
 			}
 			
-			# Figure out which are the new variables in the configuration file
-			# and which variables in the job (may) need to be removed.
+			# Figure out which are the new variables in the configuration file and which variables in the
+			# job (may) need to be removed.
 			$configVariables = $jobObject.GetVariables()
 			$newVariables = $configVariables | Where-Object { $jobObject.Variables -notcontains $_ }
 			$oldVariables = $jobObject.Variables | Where-Object { $configVariables -notcontains $_ }
 			
 			$variableList = $jobObject.Variables
-			# First remove all of the not-needed-anymore variables from the
-			# hashtable.
+			# First remove all of the not-needed-anymore variables from the hashtable.
 			foreach ($key in $oldVariables)
 			{
 				$variableList.Remove($key)
 			}
-			# Then add all of the new variables which need an initial value
-			# before the job can be ran.
+			# Then add all of the new variables which need an initial value before the job can be ran.
 			foreach ($key in $newVariables)
 			{
 				if ($PSBoundParameters.ContainsKey($key))

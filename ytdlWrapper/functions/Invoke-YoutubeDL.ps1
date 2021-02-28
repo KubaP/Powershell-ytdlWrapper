@@ -123,9 +123,8 @@ function Invoke-YoutubeDl
 	
 	dynamicparam
 	{
-		# Only run the input detection logic if a template is given, and only
-		# one template is given, and the template exists, and the template
-		# has a valid configuration file path.
+		# Only run the input detection logic if a template is given, and only one template is given,
+		# and the template exists, and the template has a valid configuration file path.
 		if (-not $Template) { return }
 		if ($null -eq $Names) { return }
 		$name = $Names[0]
@@ -140,8 +139,7 @@ function Invoke-YoutubeDl
 		
 		# Define the dynamic parameter dictionary to hold new parameters.
 		$parameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-		# Now that a list of all input definitions is found, create a
-		# dynamic parameter for each one.
+		# Now that a list of all input definitions is found, create a dynamic parameter for each one.
 		foreach ($input in $inputNames)
 		{
 			# Set up the necessary objects for a parameter.
@@ -206,9 +204,8 @@ function Invoke-YoutubeDl
 					return
 			}
 			
-			# Get the necessary inputs for this template, and assign each the 
-			# user provided value. Quit if the user has failed to give in a 
-			# certain value.
+			# Get the necessary inputs for this template, and assign each the user provided value.
+			# Quit if the user has failed to give in a certain value.
 			$inputNames = $templateObject.GetInputs()
 			$inputs = @{}
 			foreach ($input in $inputNames)
@@ -226,10 +223,9 @@ function Invoke-YoutubeDl
 			
 			$completedTemplateContent = $templateObject.GetCompletedConfigFile($inputs)
 			
-			# Write modified config file (with substituted user inputs) to a
-			# temporary file. This is done because it is easier to use the 
-			# --config-location flag for youtube-dl than to edit the whole
-			# string to use proper escape sequences.
+			# Write modified config file (with substituted user inputs) to a temporary file.
+			# This is done because it is easier to use the '--config-location' flag for youtube-dl than it is 
+			# to edit the whole string to use proper escape sequences.
 			$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedTemplateContent)
 			$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
 			if ($PSCmdlet.ShouldProcess("Creating temporary configuration file at: '$script:Folder\$hash.conf'.", "Are you sure you want to create a temporary configuration file at: '$script:Folder\$hash.conf'?", "Create File Prompt"))
@@ -287,10 +283,9 @@ function Invoke-YoutubeDl
 				
 				$completedJobContent = $jobObject.GetCompletedConfigFile()
 				
-				# Write modified config file (with substituted variable values) to a
-				# temporary file. This is done because it is easier to use the 
-				# --config-location flag for youtube-dl than to edit the whole
-				# string to use proper escape sequences.
+				# Write modified config file (with substituted variable values) to a temporary file.
+				# This is done because it is easier to use the  '--config-location# flag for youtube-dl than it is
+				# to edit the whole string to use proper escape sequences.
 				$stream = [System.IO.MemoryStream]::new([byte[]][char[]]$completedJobContent)
 				$hash = (Get-FileHash -InputStream $stream -Algorithm SHA256).hash
 				if ($PSCmdlet.ShouldProcess("Creating temporary configuration file at: '$script:Folder\$hash.conf'.", "Are you sure you want to create a temporary configuration file at: '$script:Folder\$hash.conf'?", "Create File Prompt"))
@@ -327,8 +322,7 @@ function Invoke-YoutubeDl
 				{
 					$scriptblock = [scriptblock]::Create($scriptblocks[$key])
 					$returnResult = Invoke-Command -ScriptBlock $scriptblock
-					# If no value is returned, return the variable name to the invocation
-					# cmdlet to warn the user.
+					# If no value is returned, return the variable name to the invocation cmdlet to warn the user.
 					if ($null -eq $returnResult)
 					{
 						Write-Error "The job: '$name' has a scriptblock definition named: '$key' which did not return a value!`nFor help regarding the configuration file, see the `"SETTING UP A CONFIGURATION FILE`" section in the help at: `'about_ytdlWrapper_jobs`'."

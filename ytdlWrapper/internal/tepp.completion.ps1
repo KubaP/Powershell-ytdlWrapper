@@ -17,10 +17,9 @@ $argCompleter_ItemName = {
 	}
 	
 	# Return the names which match the currently typed in pattern.
-	# This first strips the string of any quotation marks, then matches it to 
-	# the valid names, and then inserts the quotation marks again.
-	# This is necessary so that strings with spaces have quotes, otherwise
-	# they will not be treated as one parameter.
+	# This first strips the string of any quotation marks, then matches it to  the valid names,
+	# and then inserts the quotation marks again. This is necessary so that strings with spaces have quotes,
+	# otherwise they will not be treated as one parameter.
 	$list.Name | Where-Object { $_ -like "$($wordToComplete.Replace(`"`'`", `"`"))*" } | ForEach-Object { "'$_'" }
 	
 }
@@ -31,16 +30,16 @@ $argCompleter_JobVariable = {
 	# Only proceed if specifying a job.
 	if ($fakeBoundParameters.Template) { return }
 	
-	# Get the already typed in job name
+	# Get the already typed in job name.
 	$jobName = $fakeBoundParameters.Name
 	
 	if ($null -ne $jobName) {
-		# Import all youtube-dl.Job objects from the database file
+		# Import all [YoutubeDlJob] objects from the database file.
 		$jobList = Read-Jobs
 		$job = $jobList | Where-Object { $_.Name -eq $jobName }
 		
 		if ($null -ne $job) {
-			# Return the variables which match currently typed in pattern
+			# Return the variables which match currently typed in pattern.
 			$job.Variables.Keys | Where-Object { $_ -like "$($wordToComplete.Replace(`"`'`", `"`"))*" } `
 				| ForEach-Object { "'$_'" }
 		}
